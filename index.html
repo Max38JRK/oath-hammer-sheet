@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oath Hammer – Character Sheet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ------------------------------------
+   FANTASY PERGAMENA THEME (Cinzel + Garamond)
+------------------------------------ */
+
+body {
+  font-family: 'EB Garamond', serif;
+  background: #ede6d6 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=') repeat; /* parchment texture */
+  margin: 0;
+  padding: 0;
+  color: #2b1f0e;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 1000px;
+  margin: 30px auto;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 28px 22px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.35);
+  border: 3px solid #c9b489;
+  backdrop-filter: blur(2px);
+}
+
+/* MAIN TITLE */
+h1 {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 40px;
+  margin-top: 0;
+  color: #4a3315;
+  text-shadow: 1px 1px 0 #f8f1d8;
+}
+
+/* SECTION TITLES */
+h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  color: #3d2b12;
+  border-bottom: 2px solid #b89b69;
+  padding-bottom: 4px;
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.toolbar button,
+.toolbar input[type="file"] {
+  background: #f3e6c1;
+  border: 2px solid #b59b6b;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+}
+
+.toolbar button:hover {
+  background: #e8d7a8;
+}
+
+/* CHARACTER SLOTS MODAL – parchment style */
+#characterModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;                 /* viene portato a flex da JS */
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+#characterModalOverlay.show {
+  display: flex;
+}
+
+.character-modal {
+  background: #fbf3dd;
+  border: 3px solid #b89b69;
+  border-radius: 12px;
+  padding: 16px 18px;
+  max-width: 640px;
+  width: 90%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  font-family: 'EB Garamond', serif;
+}
+
+.character-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.character-modal-header h2 {
+  margin: 0;
+  border-bottom: none;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: #7b3a2b;
+}
+
+#characterSlotsList {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.character-slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid #c0a76e;
+  background: #fdf7e6;
+}
+
+.character-slot.current {
+  background: #b85a4a;
+  border-color: #9d473a;
+  color: #fffdf5;
+}
+
+.character-slot.current .slot-title,
+.character-slot.current .slot-name,
+.character-slot.current .slot-meta,
+.character-slot.current .slot-date {
+  color: inherit;
+}
+
+.slot-main {
+  flex: 1;
+}
+
+.slot-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.slot-name {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.slot-meta,
+.slot-date {
+  font-size: 13px;
+}
+
+.slot-meta {
+  opacity: 0.9;
+}
+
+.slot-date {
+  opacity: 0.8;
+}
+
+.slot-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 10px;
+}
+
+.slot-actions button {
+  background: #f3e6c1;
+  border: 1px solid #b59b6b;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.slot-actions button:hover {
+  background: #e8d7a8;
+}
+
+.character-modal-footer {
+  margin-top: 10px;
+  text-align: right;
+}
+
+#btnCreateSlot {
+  background: #b85a4a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+}
+
+#btnCreateSlot:hover {
+  background: #9d473a;
+}
+
+.modal-empty {
+  font-style: italic;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+
+/* GRID LAYOUT HELPERS */
+.grid-2, .grid-3, .grid-4 {
+  display: grid;
+  gap: 10px;
+}
+.grid-2 { grid-template-columns: repeat(2,1fr); }
+.grid-3 { grid-template-columns: repeat(3,1fr); }
+.grid-4 { grid-template-columns: repeat(4,1fr); }
+
+/* FIELDS */
+.field label {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  margin-bottom: 3px;
+  display: block;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid #b59b6b;
+  background: #fffdf7;
+  border-radius: 6px;
+  padding: 6px 7px;
+  font-size: 16px;
+  font-family: 'EB Garamond', serif;
+}
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+table th {
+  background: #d7c5a3;
+  border: 1px solid #b59b6b;
+  padding: 5px;
+  font-family: 'Cinzel', serif;
+}
+
+table td {
+  background: #faf7f0;
+  border: 1px solid #b59b6b;
+  padding: 4px 5px;
+}
+
+/* SKILL TOOLTIP – Fantasy parchment popup */
+#skillTooltip {
+  position: fixed;
+  max-width: 380px;
+  min-width: 280px; /* ← evita che si restringa troppo */
+  padding: 14px 16px;
+  background: #fbf3dd;
+  border: 3px solid #b89b69;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  line-height: 1.25;
+  z-index: 9999;
+  display: none;
+  white-space: normal; /* ← testo leggibile e a capo naturale */
+  overflow-wrap: break-word; /* ← evita overflow */
+}
+
+
+/* PRINT */
+@media print {
+  body { background: white; }
+  .container { box-shadow: none; border: none; }
+  .toolbar { display: none; }
+}
+
+/* FIX OVERLAPPING SECTIONS */
+.grid-2, .grid-3, .grid-4 {
+  column-gap: 18px !important;  /* distanzia orizzontalmente */
+  row-gap: 12px !important;     /* distanzia verticalmente */
+}
+.field {
+  padding-right: 4px;
+}
+.field input, .field textarea {
+  border-radius: 7px;
+}
+
+/* COLLAPSIBLE SECTIONS */
+.collapsible {
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  color: #3d2b12;
+  border-bottom: 2px solid #b89b69;
+  padding-bottom: 4px;
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.collapsible::before {
+  content: "▼"; /* default open */
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+.collapsible.closed::before {
+  content: "▶";
+}
+
+.section-content {
+  overflow-y: hidden;     /* nasconde solo il verticale (per l’animazione) */
+  overflow-x: visible;    /* permette al contenuto di usare tutta la larghezza */
+  transition: max-height 0.35s ease-out;
+  max-height: 9999px;
+}
+
+.section-content.closed {
+  max-height: 0 !important;
+  overflow-y: hidden;
+  overflow-x: visible;
+}
+
+.section-content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* FIX: allow grid items to shrink properly */
+.grid-2, .grid-3, .grid-4 {
+  min-width: 0;
+}
+.field {
+  min-width: 0;
+}
+.field input, .field textarea {
+  min-width: 0;
+}
+
+.section-content > .grid-2,
+.section-content > .grid-3,
+.section-content > .grid-4,
+.section-content > table,
+.section-content > div {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.grid-2, .grid-3, .grid-4 {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-content {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.read-only-area {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #bba27a;
+  background-color: #fefbf3;
+  padding: 6px;
+  width: 100%;
+  resize: vertical;       /* torna a funzionare */
+  font-family: inherit;
+  color: #333;
+}
+
+
+
+/* ============================================
+   FANTASY DROPDOWN STYLE (coerente con la scheda)
+============================================ */
+
+.info-select {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 16px;
+  font-family: inherit;
+  background: #fffdf7;
+  border: 2px solid #b59b6b;
+  border-radius: 6px;
+  color: #3d2b12; /* testo marrone scuro */
+  appearance: none;    /* rimuove freccia nativa */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image:
+      linear-gradient(45deg, transparent 50%, #6e5635 50%),
+      linear-gradient(135deg, #6e5635 50%, transparent 50%),
+      linear-gradient(to right, #a0845c, #a0845c); /* freccia e separatore */
+  background-position:
+      calc(100% - 20px) calc(50% - 3px),
+      calc(100% - 15px) calc(50% - 3px),
+      calc(100% - 30px) 0;
+  background-size: 
+      5px 5px,
+      5px 5px,
+      1px 100%;
+  background-repeat: no-repeat;
+}
+
+/* Hover effect */
+.info-select:hover {
+  background-color: #fffaf0;
+  border-color: #8a6f45;
+}
+
+/* Focus effect */
+.info-select:focus {
+  outline: none;
+  border-color: #c29e62;
+  box-shadow: 0 0 6px rgba(194, 158, 98, 0.6);
+}
+
+/* Options styling (compatible in most browsers) */
+.info-select option {
+  background: #f7f0d8;
+  color: #3d2b12;
+}
+
+.trait-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.trait-remove-btn {
+  background: #b85a4a;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.trait-remove-btn:hover {
+  background: #9d473a;
+}
+
+.autosize-detail {
+    overflow-y: hidden;
+    resize: vertical;
+    min-height: 22px;      /* altezza minima più compatta */
+    padding: 2px 4px;      /* riduce lo spazio interno */
+    line-height: 1.1;      /* rende il testo più compatto */
+    box-sizing: border-box;
+}
+
+.autosize-detail::-webkit-scrollbar {
+    display: none;
+}
+
+</style>
+
+</head>
+
+<div id="characterModalOverlay" class="character-modal-overlay">
+  <div class="character-modal">
+    <div class="character-modal-header">
+      <h2>Character Slots</h2>
+      <button type="button" id="characterModalClose" class="modal-close-btn">&times;</button>
+    </div>
+    <div id="characterSlotsList"></div>
+    <div class="character-modal-footer">
+      <button type="button" id="btnCreateSlot">Create New Slot</button>
+    </div>
+  </div>
+</div>
+
+<body>
+
+<div class="container">
+
+<h1>Oath Hammer – Character Sheet</h1>
+
+<div class="toolbar">
+  <button type="button" id="btnCharacters">Characters</button>
+  <input type="file" id="jsonLoader" accept=".json">
+  <button type="button" id="btnExport">Export JSON</button>
+  <button type="button" id="btnClearLocal">Clear Local Data</button>
+  <button type="button" id="btnToggleAll">Close All</button>
+</div>
+
+
+
+<!-- =============================== -->
+<!--        CHARACTER INFO           -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="characterInfo">Character Info</h2>
+<div class="section-content" data-section-content="characterInfo">
+  <div class="grid-3">
+  <div class="field"><label>Name</label><input id="name"></div>
+  <div class="field">
+  <label>Lineage</label>
+  <select id="lineage" class="info-select" data-tooltip-type="lineage">
+  <option value=""></option>
+  <option>Dwarf</option>
+  <option>Firbolg</option>
+  <option>Halfling</option>
+  <option>High Elf</option>
+  <option>Human</option>
+  <option>Wood Elf</option>
+</select>
+</div>
+  <div class="field">
+  <label>Class</label>
+  <select id="class" class="info-select" data-tooltip-type="class">
+  <option value=""></option>
+  <option>Berserker</option>
+  <option>Champion</option>
+  <option>Delver</option>
+  <option>Knight</option>
+  <option>Mage</option>
+  <option>Priest</option>
+  <option>Scout</option>
+  <option>Soldier</option>
+  <option>Spellblade</option>
+  <option>Troubadour</option>
+</select>
+</div>
+  <div class="field"><label>Experience</label><input id="experience"></div>
+  <div class="field"><label>Luck (L)</label><input id="luck"></div>
+  <div class="field"><label>Grit</label><input id="grit"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--        ATTRIBUTES               -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="attributes">Attributes</h2>
+<div class="section-content" data-section-content="attributes">
+<div class="grid-3">
+  <div class="field"><label>Might</label><input id="might"></div>
+  <div class="field"><label>Toughness</label><input id="toughness"></div>
+  <div class="field"><label>Agility</label><input id="agility"></div>
+  <div class="field"><label>Willpower</label><input id="willpower"></div>
+  <div class="field"><label>Intelligence</label><input id="intelligence"></div>
+  <div class="field"><label>Fate</label><input id="fate"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--             ARMOR               -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="armor">Armor</h2>
+<div class="section-content" data-section-content="armor">
+<div class="grid-4">
+  <div class="field"><label>Armor Type</label><input id="armorType"></div>
+  <div class="field"><label>Armor Name</label><input id="armor"></div>
+  <div class="field"><label>AV</label><input id="av"></div>
+  <div class="field"><label>Penalty</label><input id="penalty"></div>
+</div>
+
+<div class="grid-2">
+  <div class="field"><label>Trait 1</label><input id="trait1"></div>
+  <div class="field"><label>Trait 2</label><input id="trait2"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--          MAGIC ITEMS            -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="magicItems">Magic Items</h2>
+<div class="section-content" data-section-content="magicItems">
+<div class="grid-3">
+  <div class="field"><label>Focus</label><input id="focus"></div>
+  <div class="field"><label>Talisman 1</label><input id="talisman1"></div>
+  <div class="field"><label>Talisman 2</label><input id="talisman2"></div>
+  <div class="field"><label>Trinket 1</label><input id="trinket1"></div>
+  <div class="field"><label>Trinket 2</label><input id="trinket2"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--       MAGIC & SPECIAL TRAITS    -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="magicTraits">Magic & Special Traits</h2>
+<div class="section-content" data-section-content="magicTraits">
+<div class="field">
+  <textarea id="magicAndSpecialTraits" rows="6" style="resize: vertical;"></textarea>
+</div>
+
+<!-- ARCANE FIELDS MOVED HERE -->
+<div class="grid-4">
+  <div class="field"><label>Arcane Stress</label><input id="arcaneStress"></div>
+  <div class="field"><label>Stress Threshold</label><input id="stressThreshold"></div>
+  <div class="field"><label>Spell Save Modifier</label><input id="spellSaveModifier"></div>
+  <div class="field"><label>Current Miracle DV</label><input id="currentMiracleDV"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--        MAGIC & MIRACLES         -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="magicMiracles">Magic & Miracles</h2>
+<div class="section-content" data-section-content="magicMiracles">
+
+  <button id="addMagicBtn" class="add-btn">+ Add Spell / Miracle</button>
+
+  <div id="magicMiraclesContainer"></div>
+
+</div>
+
+<!-- ============================================================== -->
+<!--  SPECIAL TRAITS -->
+<!-- ============================================================== -->
+
+<h2 class="collapsible" data-section="specialTraits">Special Traits</h2>
+<div class="section-content" data-section-content="specialTraits">
+
+    <button id="addTraitBtn" class="add-btn">+ Add Trait</button>
+
+    <div id="traitsContainer"></div>
+
+  </div>
+
+
+<!-- =============================== -->
+<!--             OATHS               -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="oaths">Oaths</h2>
+<div class="section-content" data-section-content="oaths">
+<div class="grid-3">
+
+  <div class="field">
+    <label>Oath 1</label>
+    <select id="oath1" class="info-select" data-tooltip-type="oath">
+      <option value=""></option>
+      <option>Compassion</option>
+      <option>Courage</option>
+      <option>Diligence</option>
+      <option>Faith</option>
+      <option>Humility</option>
+      <option>Justice</option>
+      <option>Loyalty</option>
+      <option>Peace</option>
+      <option>Perseverance</option>
+      <option>Purity</option>
+      <option>Truth</option>
+      <option>Wisdom</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Oath 2</label>
+    <select id="oath2" class="info-select" data-tooltip-type="oath">
+      <option value=""></option>
+      <option>Compassion</option>
+      <option>Courage</option>
+      <option>Diligence</option>
+      <option>Faith</option>
+      <option>Humility</option>
+      <option>Justice</option>
+      <option>Loyalty</option>
+      <option>Peace</option>
+      <option>Perseverance</option>
+      <option>Purity</option>
+      <option>Truth</option>
+      <option>Wisdom</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Oath 3</label>
+    <select id="oath3" class="info-select" data-tooltip-type="oath">
+      <option value=""></option>
+      <option>Compassion</option>
+      <option>Courage</option>
+      <option>Diligence</option>
+      <option>Faith</option>
+      <option>Humility</option>
+      <option>Justice</option>
+      <option>Loyalty</option>
+      <option>Peace</option>
+      <option>Perseverance</option>
+      <option>Purity</option>
+      <option>Truth</option>
+      <option>Wisdom</option>
+    </select>
+  </div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--            CURRENCY             -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="currency">Currency</h2>
+<div class="section-content" data-section-content="currency">
+<div class="grid-3">
+  <div class="field"><label>Copper</label><input id="copper"></div>
+  <div class="field"><label>Silver</label><input id="silver"></div>
+  <div class="field"><label>Gold</label><input id="gold"></div>
+</div>
+</div>
+
+<!-- =============================== -->
+<!--            WEAPONS              -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="weapons">Weapons</h2>
+<div class="section-content" data-section-content="weapons">
+<table>
+<thead>
+<tr>
+  <th>Weapon</th>
+  <th>Range</th>
+  <th>Damage</th>
+  <th>AP</th>
+  <th>Traits</th>
+</tr>
+</thead>
+<tbody id="weaponsTable"></tbody>
+</table>
+<button type="button" id="btnAddWeapon">Add Weapon</button>
+</div>
+<!-- =============================== -->
+<!--             SKILLS              -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="skills">Skills</h2>
+<div class="section-content" data-section-content="skills">
+<div style="display:flex; gap:12px; margin:10px 0;">
+  <input type="text" id="skillSearch" placeholder="Search skill..." style="flex:1; padding:6px; font-size:16px;">
+  <button type="button" id="btnSortSkills">Sort Skills</button>
+</div>
+<table>
+<thead>
+<tr>
+  <th>Skill</th>
+  <th>Attr</th>
+  <th>Dice</th>
+  <th>Ranks</th>
+  <th>Mods</th>
+  <th>Stat</th>
+  <th>Total</th>
+</tr>
+</thead>
+<tbody id="skillsTable"></tbody>
+</table>
+</div>
+
+<!-- =============================== -->
+<!--           ITEM SLOTS            -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="items">Item Slots</h2>
+<div class="section-content" data-section-content="items">
+<div class="grid-4" id="itemSlots"></div>
+</div>
+
+<!-- =============================== -->
+<!--             NOTES               -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="notes">Notes</h2>
+<div class="section-content" data-section-content="notes">
+
+  <div class="field">
+    <label>General Notes</label>
+    <textarea id="notesField" rows="8" style="resize: vertical;"></textarea>
+  </div>
+
+</div>
+
+<!-- =============================== -->
+<!--           BACKGROUND            -->
+<!-- =============================== -->
+
+<h2 class="collapsible" data-section="background">Background</h2>
+<div class="section-content" data-section-content="background">
+
+  <div class="field">
+    <label>Character Background</label>
+    <textarea id="backgroundField" rows="10" style="resize: vertical;"></textarea>
+  </div>
+
+</div>
+
+<!-- =============================== -->
+<!--     TOOLTIP (PARCHMENT POPUP)   -->
+<!-- =============================== -->
+
+<div id="skillTooltip"></div>
+
+
+</div> <!-- end .container -->
+
+<script>
+
+/***********************************************
+   GLOBAL CONSTANTS & HELPERS
+************************************************/
+
+const ATTR_MAP = {
+  "M": "might",
+  "T": "toughness",
+  "Ag": "agility",
+  "WP": "willpower",
+  "Int": "intelligence",
+  "F": "fate"
+};
+
+/* Tooltip texts for every skill */
+const SKILL_TOOLTIPS = {
+  "Academics": `Academics measures your scholarly education. Academics checks are commonly made when a character is attempting to recall knowledge they may have acquired through formal study and training.`,
+
+  "Acrobatics": `Acrobatics checks may be necessary when you are attempting to avoid danger. An Acrobatics check may also be necessary if you fall from a significant height.`,
+
+  "Animal Handling": `The number of animals you can control during an encounter is equal to your ranks in this skill. Animals under your control move and perform actions during your turn. Animal Handling checks may be necessary when directing a trained animal to complete a complicated task. An Animal Handling check is also necessary when trying to calm a wild animal or when driving horse-drawn vehicles through dangerous terrain. When an animal within 20 ft of you is forced to make a Discipline check, you may make an Animal Handling check on its behalf instead. The DV for this skill check equals the DV of the animal’s Discipline check.`,
+
+  "Athletics": `This skill is used for acts of climbing, jumping, lifting, and swimming.`,
+
+  "Brewing": `This skill is used when you attempt to make alcoholic beverages or magic potions.`,
+
+  "Carpentry": `Carpentry checks are made when building wooden structures. Carpentry checks are also used for fletching and bow-making.`,
+
+  "Defense": `This skill determines your ability to evade and parry attacks. Agility is the default governing attribute for this skill. When you are attempting to defend against a melee attack, you may choose Might as the governing attribute for this skill.`,
+
+  "Dexterity": `This skill measures how nimble your hands are. Dexterity checks are commonly used for disarming traps and picking locks, though they may also be used for any task that requires skillful manipulation. When used for sleight of hand, Dexterity checks are opposed by Perception checks.`,
+
+  "Diplomacy": `Diplomacy checks are performed when attempting to charm, deceive, haggle, intimidate, or seduce others. Diplomacy checks are only performed when the outcome of a social interaction is uncertain and should not be a substitute for roleplay.`,
+
+  "Discipline": `Discipline measures your self-control and ability to resist debilitating effects that target the mind.`,
+
+  "Fighting": `This skill determines your accuracy with melee attacks. Might is the default governing attribute for this skill. If you are wielding a nimble weapon, you may choose Agility as the governing attribute for this skill.`,
+
+  "Folklore": `Folklore checks are made when you attempt to recall local mythology, rumors, and legends. It is assumed you acquired this knowledge while gossiping with the locals.`,
+
+  "Fortune": `Fortune determines how lucky you are. While some believe that fate is immutable, the truth is that fortune favors the bold.`,
+
+  "Heal": `This skill allows you to medically treat a character within your reach. Heal checks can be used to apply first aid after a battle, neutralize poison, mend wounds, stabilize injuries, etc. See the Combat Chapter for more information on how healing works.`,
+
+  "Leadership": `The number of hirelings and retainers you can control during an encounter is equal to your ranks in this skill. These combatants move and perform actions during your turn. When an ally within 100 ft of you is forced to make a Discipline check, you may make a Leadership check on their behalf instead. The DV for this Leadership check equals the other combatant’s Discipline check DV.`,
+
+  "Magic": `This skill measures how much divine or arcane power you can wield. When performing miracles, Willpower is the governing attribute for this skill. Intelligence governs this skill when you cast spells. You must have a trait that allows you to perform miracles or cast spells.`,
+
+  "Masonry": `Masonry checks are made when building stone structures.`,
+
+  "Orientation": `Orientation determines your ability to navigate the world.`,
+
+  "Perception": `Perception measures your situational awareness. You may be required to perform a Perception check to locate creatures attempting to evade your notice. This is resolved as an opposed test using your Perception skill and the skulker’s Stealth skill. If you win the opposed test, you discover the sneaking creature. If you lose the opposed test, the other party evades your detection, and no further tests are made. In the event of a draw, the creature attempting to evade you will have to attempt another Stealth check and devise a new means to bypass you. Perception also measures your ability to find clues and hidden objects. While poorly concealed traps may be located with a DV1 Perception check, finding a well-hidden secret room would require a DV5 check.`,
+
+  "Resilience": `This skill measures your ability to endure damage, recover from injury, and resist debilitating effects that target your constitution. The total number of Grit Points you possess is determined by adding your ranks in Resilience and Toughness.`,
+
+  "Ride": `Ride checks may be required when attempting difficult maneuvers while mounted. A DV1 Ride check would be necessary to jump over a short fence, while a DV5 Ride check would be required to convince a steed to leap over a deep ravine. A mounted combatant compelled to make an Acrobatics check must make a Ride check instead. The DV for this Ride check equals the DV for the required Acrobatics check.`,
+
+  "Shooting": `This attribute determines accuracy with ranged attacks.`,
+
+  "Smithing": `Smithing checks are made when constructing metal objects.`,
+
+  "Stealth": `Stealth measures your ability to tread silently and conceal yourself from others. Stealth checks are opposed by Perception checks. When using this skill near several creatures, only one opposed test is made against the creature with the highest Perception. Certain conditions, such as lighting, may offer a bonus or penalty to the Stealth check. It is not possible to remain hidden after performing a hostile action. You cannot perform a Stealth check while creatures can see you or after you have been detected.`,
+
+  "Survival": `Survival measures your ability to find food, shelter, and water.`,
+
+  "Tracking": `Tracking allows you to follow the trail of another creature or locate signs of their nearby presence. Following fresh prints that are clearly visible is easy, while old tracks obscured by the elements can only be tracked by an expert. Characters may also gain a bonus to Tracking when using the skill in familiar regions.`
+};
+
+const FIELD_TOOLTIPS = {
+  lineage: {
+    "Dwarf": "Though shorter than men, dwarves are stronger and more broadly built. The life expectancy of a dwarf is approximately 200 years, though some have lived significantly longer. The dwarves of Osric Isle are known as Dwyrgar and are famed for their craftsmanship, loyalty, and fiery tempers. Most Dwyrgar live in exile, honing their martial abilities so they may one day return to Osric Isle and reclaim their homeland.<br><br><strong>Fyrd Training</strong><br>You gain a +1 bonus to attack and defense rolls. You are also proficient with heavy weapons.<br><strong>Master Craftsman</strong><br>You gain 2 ranks in Brewing, Masonry, or Smithing.<br><strong>Ponderous</strong><br>You incur a -1 penalty to Acrobatics checks.<br><strong>Stalwart</strong><br>You gain 1 rank in Toughness and 2 additional item slots. You cannot be Dazed.",
+    "Firbolg": "Firbolgs hail from Mistheim, a people who are equally man and orc. Driven from their homeland by orcs who considered them stained by humanity, the firbolgs settled on Osric Isle. After countless battles against elves and dwarves, the firbolgs abandoned their ancient cities and were confined to the swamps.<br><br><strong>Fey-Touched</strong><br>You gain a +1 bonus to Spell Saves and you are resistant to magic damage.<br><strong>Monstrous Strength</strong><br>You gain 1 rank in Might. You roll red dice for Athletics checks and melee damage rolls.<br><strong>Reckless Ferocity</strong><br>You incur a -1 penalty to defense rolls and Discipline checks.<br><strong>Swamp Folk</strong><br>You cannot be Diseased.",
+    "Halfling": "Halflings are about the same height as dwarves but are physically less imposing. They accept the name halfling, though they are known in their homeland as hearthfolk. Halflings are gentle, peace-loving people who avoid social and physical conflict whenever possible. When threatened, halflings rely on their marksmanship to protect their communities. There are few archers as skilled as those found among the halflings. Possessing affable temperaments and a fondness for song, halflings often pursue careers as troubadours. Halflings are also commonly found serving as scouts for armies and adventurers.<br><br><strong>Expert Archer</strong><br>You gain a +1 bonus to ranged attack rolls.<br><strong>Small Stature</strong><br>You gain a +1 bonus to defense rolls, though incur a -1 penalty to Athletics checks and melee damage rolls.<br><strong>Soft Treading</strong><br>You gain 1 rank in Acrobatics and Stealth.<br><strong>Uncanny Fortune</strong><br>You gain 1 rank in Fate.",
+    "High Elf": "Nearly immortal, elves perceive time very differently than men. Elves live with little urgency, slowly developing their skills with patient serenity. Those who have little familiarity with elves often find them cold and incapable of reading the social cues of other cultures. The high elves who hail from the Velathi Empire live only for comfort; they detest labor and rely on their magic to perform otherwise arduous tasks. Velathi society revolves around the endless pursuit of art, music, and literature. High elves who yearn for adventure are rare and are typically regarded by their peers as dangerous individuals who do not belong in polite society.<br><br><strong>Keen Mind</strong><br>You gain 1 rank in Intelligence.<br><strong>Lorekeeper</strong><br>You gain 2 ranks in Academics.<br><strong>Velathi Sorcery</strong><br>You know two DV1 spells of your choice. Spellcasting attempts for these spells are always successful, and no Magic check is necessary.<br><strong>Willowy</strong><br>The maximum number of Grit Points you have is reduced by 1.",
+    "Human": "Due to their short lives, humans feel a certain urgency to achieve greatness. Through sheer willpower and desire, humans develop at a more rapid rate than other creatures. Ancient beings often look at the sprawling human world like a raging wildfire. The men of Nockland have long been at peace with the dwarves of Osric Isle, the two cultures sharing a common language and religion. Nocklanders are famous for their brave explorers, chivalrous knights, and master sailors. Ships produced in Nockland are regarded as some of the finest in the world. While Nocklanders are fond of halflings and dwarves, they distrust elves and are reluctant to associate with them; Nockland has warred with the Velathi Empire on many occasions, and its people are raised to fear elves.<br><br><strong>Versatile</strong><br>You gain 1 rank in four different skills of your choice.<br><strong>Human Determination</strong><br>When spending a Luck Point, you gain a +3 bonus to a dice roll rather than +2.<br><strong>Iron Will</strong><br>You gain 1 rank in Willpower.",
+    "Wood Elf": "The elves of Osric Isle are known as the Tuatha Uaine, and they have been greatly influenced by the land's fey magic. Unlike high elves, the Tuatha Uaine do not shy away from physical hardship and prefer wild woodlands over lavish cities. Rather than attempting to conquer and bend magic to their will, wood elves regard spellcraft as a dangerous instrument reserved for their seers. Wood elves care little for the written word and prefer to preserve their culture through oral tradition. While possessing a strong affinity for nature, Tuatha Uaine culture considers hunting a sacred and integral component of their society. Slaying a dangerous creature is often a rite of passage for a young elven warrior, testing their abilities with both bow and spear.<br><br><strong>Hunter</strong><br>You gain proficiency with bows and 2 ranks in Tracking.<br><strong>One with Nature</strong><br>You gain 1 rank in Orientation and Survival.<br><strong>Sylvan Grace</strong><br>You gain 1 rank in Agility.<br><strong>Willowy</strong><br>The maximum number of Grit Points you have is reduced by 1."
+  },
+  class: {
+    "Berserker": "Berserkers rely on physical strength and ferocity in battle. These warriors fear nothing and fight with a terrifying frenzy. While some berserkers have difficulty restraining their fury, others remain composed outside of armed conflict.<br><br><strong>Starting Skills</strong><br>Acrobatics: 1 rank<br>Athletics: 3 ranks<br>Defense: 1 rank<br>Fighting: 2 ranks<br>Survival: 1 rank<br>Resilience: 3 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br>Medium<br><br><strong>Weapon Proficiencies</strong><br>Common<br>Dueling<br>Heavy<br>Throwing",
+    "Champion": "Champions are fighters who have spent countless hours developing their deadly craft. While soldiers train to fight in formation, champions prefer single combat.<br><br><strong>Starting Skills</strong><br>Athletics: 1 rank<br>Acrobatics: 2 ranks<br>Defense: 2 ranks<br>Dexterity: 1 rank<br>Discipline: 1 rank<br>Fighting: 2 ranks<br>Leadership: 1 rank<br>Resilience: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br>Medium<br><br><strong>Weapon Proficiencies</strong><br>Common<br>Dueling<br>Throwing",
+    "Delver": "Adventurers who explore lost ruins are known as delvers. Some of these heroes venture into dangerous places in pursuit of treasure, while others seek evil to destroy. Not only must a delver be acrobatic, cunning, and dexterous, but they must also be lucky.<br><br><strong>Starting Skills</strong><br>Academics: 1 rank<br>Acrobatics: 2 ranks<br>Athletics: 2 ranks<br>Defense: 2 ranks<br>Dexterity: 2 ranks<br>Fighting: 1 rank<br>Folklore: 2 ranks<br>Fortune: 2 ranks<br>Orientation: 2 ranks<br>Perception: 2 ranks<br>Resilience: 1 rank<br>Shooting: 1 rank<br>Stealth: 2 ranks<br>Survival: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br><br><strong>Weapon Proficiencies</strong><br>Bows<br>Common<br>Throwing",
+    "Knight": "Some warriors are granted noble titles in exchange for fealty, while others are templars belonging to religious orders.<br><br><strong>Starting Skills</strong><br>Academics: 1 rank<br>Animal Handling: 1 rank<br>Athletics: 2 ranks<br>Defense: 2 ranks<br>Diplomacy: 1 rank<br>Discipline: 1 rank<br>Fighting: 2 ranks<br>Leadership: 2 ranks<br>Resilience: 2 ranks<br>Ride: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br>Medium<br>Heavy<br><br><strong>Weapon Proficiencies</strong><br>Common<br>Dueling<br>Heavy",
+    "Mage": "Mages are the masters of arcane magic. These spellcasters are often formally trained and spend countless years developing their academic understanding of magic.<br><br><strong>Starting Skills</strong><br>Academics: 2 ranks<br>Brewing: 1 rank<br>Folklore: 1 rank<br>Fortune: 1 rank<br>Magic: 2 ranks<br>Orientation: 2 ranks<br>Perception: 1 rank<br>Resilience: 1 rank<br><br><strong>Armor Proficiencies</strong><br>Light<br><br><strong>Weapon Proficiencies</strong><br>Common",
+    "Priest": "Priests blessed with supernatural abilities are divine instruments of their patrons. The power these holy clerics wield is borrowed and can be easily lost should the priest betray or fail their master.<br><br><strong>Starting Skills</strong><br>Defense: 1 rank<br>Diplomacy: 1 rank<br>Fighting: 1 rank<br>Fortune: 2 ranks<br>Heal: 2 ranks<br>Leadership: 1 rank<br>Magic: 2 ranks<br>Orientation: 1 rank<br>Resilience: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br>Medium<br><br><strong>Weapon Proficiencies</strong><br>Common<br>Throwing",
+    "Scout": "Scouts often conduct reconnaissance for a military force, though they can also act as guides for travelers. Scouts rely on marksmanship during military engagements and for protection in the wilderness.<br><br><strong>Starting Skills</strong><br>Animal Handling: 2 ranksDefense: 1 rank<br>Dexterity: 1 rank<br>Folklore: 2 ranks<br>Heal: 1 rank<br>Orientation: 2 ranks<br>Perception: 2 ranks<br>Resilience: 2 ranks<br>Stealth: 1 rank<br>Shooting: 2 ranks<br>Survival: 2 ranks<br>Tracking: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br><br><strong>Weapon Proficiencies</strong><br>Bows<br>Common",
+    "Soldier": "Unlike warriors who recklessly rely on savagery, soldiers exercise a disciplined form of fighting. These men-at-arms must constantly evaluate the battlefield and make appropriate decisions on the fly.<br><br><strong>Starting Skills</strong><br>Athletics: 2 ranks<br>Defense: 2 ranks<br>Discipline: 2 ranks<br>Fighting: 2 ranks<br>Leadership: 2 ranks<br>Orientation: 1 rank<br>Resilience: 3 ranks<br>Shooting: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br>Medium<br>Heavy<br><br><strong>Weapon Proficiencies</strong><br>Bows<br>Common<br>Heavy<br>Polearms<br>Throwing",
+    "Spellblade": "Spellblades may be scholars who blend swordsmanship with magic, warriors who rely on esoteric arts to hunt monsters, or monks trained to defend their monasteries.<br><br><strong>Starting Skills</strong><br>Academics: 1 rank<br>Acrobatics: 2 ranks<br>Athletics: 1 rank<br>Defense: 2 ranks<br>Fighting: 2 ranks<br>Folklore: 1 rank<br>Fortune: 2 ranks<br>Magic: 1 rank<br>Resilience: 2 ranks<br><br><strong>Armor Proficiencies</strong><br>Light<br><br><strong>Weapon Proficiencies</strong><br>Common<br>Dueling",
+    "Troubadour": "Troubadours follow adventurers so they may document acts of heroism with their music and stories. These heroes rely on their nimble hands, silver tongues, and quick wit.<br><br><strong>Starting Skills</strong><br>Acrobatics: 2 ranks<br>Athletics: 1 rank<br>Defense: 2 ranks<br>Dexterity: 2 ranks<br>Diplomacy: 2 ranks<br>Fighting: 1 rank<br>Folklore: 2 ranks<br>Fortune: 1 rank<br>Orientation: 2 ranks<br>Perception: 1 rank<br>Resilience: 1 rank<br>Shooting: 1 rank<br>Survival: 1 rank<br><br><strong>Armor Proficiencies</strong><br>Light<br><br><strong>Weapon Proficiencies</strong><br>Bows<br>Common<br>Throwing"
+  },
+  oath: {
+    "Compassion": "When those in need ask for your aid, treat them with kindness and serve them if possible. Heal those who are injured or sick, including captured enemies.<br><br><strong>Boon:</strong> You gain a +2 bonus to Heal checks.<br><strong>Bane:</strong> Heal checks performed on you incur a -2 penalty."
+	,
+	
+    "Courage": "While you are not expected to act impetuously, you must oppose evil, thwarting the wicked when possible. You can carefully choose your fights but cannot surrender to evil foes.<br><br><strong>Boon:</strong> You gain a +1 bonus to Discipline checks and cannot be Frightened.<br><strong>Bane:</strong> You incur a -2 penalty to Discipline checks. You also incur a -1 penalty to Leadership checks."
+	,
+	
+    "Diligence": "When tasked with a responsibility, you must strive to complete it as quickly and efficiently as possible. You should embrace hard work and industry while rejecting sloth.<br><br><strong>Boon:</strong> You roll black dice for Carpentry, Masonry, and Smithing checks.<br><strong>Bane:</strong> You incur a -2 penalty to Carpentry, Masonry, and Smithing checks."
+	,
+	
+    "Faith": "Glorify your god through noble deeds, serving others before yourself. Never submit to dismay and stand firm in the hope that righteousness will prevail against evil. Trust your companions and do not betray their confidence in you.<br><br><strong>Boon:</strong> You gain a +1 bonus to Spell Saves.<br><strong>Bane:</strong> You incur a -2 penalty to Spell Saves."
+	,
+	
+    "Humility": "Do not boast or live greedily. When presented with an opportunity to gain considerable wealth, you must first ensure the company’s needs are met. When the company discovers a rare or powerful item, you must allow your companions to claim it first.<br><br><strong>Boon:</strong> You gain +1 Luck Point.<br><strong>Bane:</strong> You lose 1 Luck Point."
+	,
+	
+    "Justice": "Avenge those who have been unjustly wronged. Act in fairness and punish the wicked. Honor your debts.<br><br><strong>Boon:</strong> Once per encounter, you may gain a +3 bonus to a damage roll.<br><strong>Bane:</strong> You incur a -1 penalty to attack and damage rolls."
+	,
+	
+    "Loyalty": "Obey your superiors while respecting your peers. Defend your companions and remain their stalwart supporter. Care for your subordinates.<br><br><strong>Boon:</strong> Allies within 25 ft of you are Inspired. Once per encounter, you can provide an ally within 5 ft a +2 bonus to a defense roll or Spell Save.<br><strong>Bane:</strong> You incur a -2 penalty to Leadership checks."
+	,
+	
+    "Peace": "Avoid needless violence. Provide mercy to those who wrong you. Do not speak cruelly or incite anger in others with your words.<br><br><strong>Boon:</strong> You gain a +2 bonus to Diplomacy checks.<br><strong>Bane:</strong> You incur a -2 penalty to Diplomacy checks."
+	,
+	
+    "Perseverance": "You must overcome adversity, never yielding to despair. When defeated, you must try again until you prevail. Do not rush foolishly towards failure; instead, plan for victory.<br><br><strong>Boon:</strong> You gain a +1 bonus to Resilience checks and cannot be Diseased or Poisoned.<br><strong>Bane:</strong> You incur a -2 penalty to Resilience checks."
+	,
+	
+    "Purity": "Abstain from spellcasting. Do not possess or wield magic items. Never consume potions or arcane elixirs.<br><br><strong>Boon:</strong> You cannot be affected by spells, and your weapons deal holy damage.<br><strong>Bane:</strong> You incur a -2 penalty to Spell Saves."
+	,
+	
+    "Truth": "Conduct yourself with honesty, never lying or deceiving others. Seek fair fights and never cheat. Always be forthright in word and action.<br><br><strong>Boon:</strong> You roll black dice for Perception checks and intuit when others are lying to you.<br><strong>Bane:</strong> You incur a -2 penalty to Diplomacy and Perception checks."
+	,
+	
+    "Wisdom": "Pursue knowledge and never act in ignorance. Adequately prepare before facing a challenge.<br><br><strong>Boon:</strong> You gain a +2 bonus to Academics and Folklore checks.<br><strong>Bane:</strong> You incur a -2 penalty to Academics and Folklore checks."
+  }
+};
+
+
+/************************************************
+   JSON LOADING
+*************************************************/
+
+document.getElementById("jsonLoader").addEventListener("change", handleJsonLoad);
+
+function id(x) { return document.getElementById(x); }
+
+function handleJsonLoad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      populateSheet(data);
+      saveToLocal();
+    } catch (err) {
+      alert("JSON parsing error: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+
+/************************************************
+   POPULATE ALL FIELDS FROM JSON
+*************************************************/
+
+function populateSheet(data) {
+
+  /* CHARACTER INFO */
+  id("name").value = data.name || "";
+  id("lineage").value = data.lineage || "";
+  id("class").value = data.class || "";
+  id("experience").value = data.experience || "";
+  id("luck").value = data.luck || "";
+  id("grit").value = data.grit || "";
+  
+  /* NOTES */
+  id("notesField").value = data.notesField || "";
+  
+  /* BACKGROUND */
+  id("backgroundField").value = data.backgroundField || "";
+
+  /* ATTRIBUTES */
+  ["might","toughness","agility","willpower","intelligence","fate"].forEach(att => {
+    id(att).value = data[att] ?? "";
+  });
+
+  /* ARMOR */
+  id("armorType").value = data.armorType || "";
+  id("armor").value = data.armor || "";
+  id("av").value = data.av || "";
+  id("penalty").value = data.penalty || "";
+
+  /* TRAITS */
+  id("trait1").value = (data.traits || [])[0] || "";
+  id("trait2").value = (data.traits || [])[1] || "";
+
+  /* MAGIC ITEMS */
+  id("focus").value = data.focus || "";
+  id("talisman1").value = data.talisman1 || "";
+  id("talisman2").value = data.talisman2 || "";
+  id("trinket1").value = data.trinket1 || "";
+  id("trinket2").value = data.trinket2 || "";
+
+  /* MAGIC & SPECIAL TRAITS + ARCANE */
+  id("magicAndSpecialTraits").value = data.magicAndSpecialTraits || "";
+  id("arcaneStress").value = data.arcaneStress || "";
+  id("stressThreshold").value = data.stressThreshold || "";
+  id("spellSaveModifier").value = data.spellSaveModifier || "";
+  id("currentMiracleDV").value = data.currentMiracleDV || "";
+
+/* === Import Special Traits === */
+document.getElementById("traitsContainer").innerHTML = "";
+
+if (data.specialTraits && Array.isArray(data.specialTraits)) {
+  data.specialTraits.forEach(t => {
+    const row = createTraitRow(t);
+    document.getElementById("traitsContainer").appendChild(row);
+  });
+}
+
+/* === Import Magic & Miracles === */
+document.getElementById("magicMiraclesContainer").innerHTML = "";
+
+if (data.magicMiracles && Array.isArray(data.magicMiracles)) {
+  data.magicMiracles.forEach(m => {
+    const row = createMagicRow(m);
+    document.getElementById("magicMiraclesContainer").appendChild(row);
+  });
+}
+
+  /* OATHS */
+  id("oath1").value = (data.oaths || [])[0] || "";
+  id("oath2").value = (data.oaths || [])[1] || "";
+  id("oath3").value = (data.oaths || [])[2] || "";
+
+  /* CURRENCY */
+  id("copper").value = data.copper || "";
+  id("silver").value = data.silver || "";
+  id("gold").value = data.gold || "";
+
+  /* WEAPONS */
+  document.getElementById("weaponsTable").innerHTML = "";
+  (data.weapons || []).forEach(w => addWeaponRow(w));
+
+  /* SKILLS */
+  const sBody = id("skillsTable");
+  sBody.innerHTML = "";
+  (data.skills || []).forEach(skill => {
+    const row = createSkillRow(skill);
+    sBody.appendChild(row);
+  });
+
+  /* ITEM SLOTS */
+  const slotsDiv = id("itemSlots");
+  slotsDiv.innerHTML = "";
+  (data.itemSlots || []).forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "item-slot";
+    div.innerHTML = `<input class="item-slot-input" data-index="${idx}" value="${item}">`;
+    slotsDiv.appendChild(div);
+  });
+}
+
+
+/************************************************
+   SKILL ROW CREATION + TOOLTIP HANDLERS
+*************************************************/
+
+function parseAttributesFromName(name) {
+  const m = name.match(/\(([^)]+)\)/);
+  if (!m) return [];
+  return m[1].split("/").map(s => s.trim());
+}
+
+function createSkillRow(skill) {
+  const tr = document.createElement("tr");
+
+  const attrCodes = parseAttributesFromName(skill.name || "");
+  if (attrCodes[0]) tr.dataset.attrA = attrCodes[0];
+  if (attrCodes[1]) tr.dataset.attrB = attrCodes[1];
+
+  tr.innerHTML = `
+    <td class="skill-name">${skill.name}</td>
+    <td class="skill-attr">${attrCodes.join(" / ")}</td>
+    <td>
+      <select class="skill-color">
+        <option value="White">White</option>
+        <option value="Red">Red</option>
+        <option value="Black">Black</option>
+      </select>
+    </td>
+    <td><input type="number" class="skill-ranks" value="${skill.skillRanks || 0}"></td>
+    <td><input type="number" class="skill-mods" value="${skill.modifiers || 0}"></td>
+    <td><input class="skill-stat" readonly></td>
+    <td><input class="skill-total" readonly></td>
+  `;
+
+  /* Color initialization */
+  const diceSel = tr.querySelector(".skill-color");
+  diceSel.value = normalizeColor(skill.diceColor);
+
+  diceSel.addEventListener("change", () => {
+    colorizeSkills();
+    updateSkillRow(tr);
+    saveToLocal();
+  });
+
+  tr.querySelector(".skill-ranks").addEventListener("input", () => {
+    updateSkillRow(tr); saveToLocal();
+  });
+  tr.querySelector(".skill-mods").addEventListener("input", () => {
+    updateSkillRow(tr); saveToLocal();
+  });
+
+  /* Tooltip hover */
+  const nameOnly = (skill.name || "").split("(")[0].trim();
+
+const nameCell = tr.querySelector(".skill-name");
+
+nameCell.addEventListener("mouseenter", ev => {
+    const tip = SKILL_TOOLTIPS[nameOnly];
+    if (!tip) return;
+    const box = id("skillTooltip");
+    box.innerHTML = tip;
+    box.style.left = ev.pageX + 20 + "px";
+    box.style.top = ev.pageY + 20 + "px";
+    box.style.display = "block";
+});
+
+nameCell.addEventListener("mousemove", ev => {
+    const box = id("skillTooltip");
+    box.style.left = ev.pageX + 20 + "px";
+    box.style.top = ev.pageY + 20 + "px";
+});
+
+nameCell.addEventListener("mouseleave", () => {
+    id("skillTooltip").style.display = "none";
+});
+
+
+  updateSkillRow(tr);
+  return tr;
+}
+
+
+/************************************************
+   COLORIZE SKILL ROWS BY DICE COLOR
+*************************************************/
+
+function normalizeColor(c) {
+  if (!c) return "White";
+  c = c.toLowerCase();
+  if (c === "white") return "White";
+  if (c === "red") return "Red";
+  if (c === "black") return "Black";
+  return "White";
+}
+
+function colorizeSkills() {
+  document.querySelectorAll("#skillsTable tr").forEach(row => {
+    const sel = row.querySelector(".skill-color");
+    if (!sel) return;
+    const color = sel.value.toLowerCase();
+
+    // reset
+    row.style.background = "#ffffff";
+    row.style.color = "#2b1f0e";
+    row.style.fontWeight = "normal";
+
+    if (color === "red") {
+      row.style.color = "#b30000";  // red text
+      row.style.fontWeight = "bold";
+    }
+
+    if (color === "black") {
+      row.style.color = "#000000";  // black text
+      row.style.fontWeight = "bold";
+    }
+  });
+}
+
+
+
+
+/************************************************
+   SKILL CALCULATIONS
+*************************************************/
+
+function getAttributeValue(code) {
+  const att = ATTR_MAP[code];
+  if (!att) return 0;
+  const el = id(att);
+  const v = parseInt(el.value || "0", 10);
+  return isNaN(v) ? 0 : v;
+}
+
+function updateSkillRow(tr) {
+  const ranks = parseInt(tr.querySelector(".skill-ranks").value || 0, 10);
+  const mods = parseInt(tr.querySelector(".skill-mods").value || 0, 10);
+  const statF = tr.querySelector(".skill-stat");
+  const totalF = tr.querySelector(".skill-total");
+
+  const a = tr.dataset.attrA;
+  const b = tr.dataset.attrB;
+
+  if (a && !b) {
+    const sA = getAttributeValue(a);
+    statF.value = sA;
+    totalF.value = ranks + mods + sA;
+  }
+  else if (a && b) {
+    const sA = getAttributeValue(a);
+    const sB = getAttributeValue(b);
+    statF.value = `${sA} / ${sB}`;
+    totalF.value = `${ranks + mods + sA} / ${ranks + mods + sB}`;
+  }
+  else {
+    /* no attribute found */
+    statF.value = "";
+    totalF.value = ranks + mods;
+  }
+}
+
+function updateAllSkills() {
+  document.querySelectorAll("#skillsTable tr").forEach(updateSkillRow);
+}
+
+
+/************************************************
+   SAVE / LOAD
+*************************************************/
+
+function collectDataFromSheet() {
+  const data = {};
+
+  /* Basic fields */
+  data.name = id("name").value;
+  data.notesField = id("notesField").value;
+  data.backgroundField = id("backgroundField").value;
+  data.lineage = id("lineage").value;
+  data.class = id("class").value;
+  data.experience = id("experience").value;
+  data.luck = id("luck").value;
+  data.grit = id("grit").value;
+
+  /* Attributes */
+  ["might","toughness","agility","willpower","intelligence","fate"].forEach(a => {
+    data[a] = id(a).value;
+  });
+
+  /* Armor */
+  data.armorType = id("armorType").value;
+  data.armor = id("armor").value;
+  data.av = id("av").value;
+  data.penalty = id("penalty").value;
+
+  /* Traits */
+  data.traits = [
+    id("trait1").value,
+    id("trait2").value
+  ];
+
+  /* Magic Items */
+  data.focus = id("focus").value;
+  data.talisman1 = id("talisman1").value;
+  data.talisman2 = id("talisman2").value;
+  data.trinket1 = id("trinket1").value;
+  data.trinket2 = id("trinket2").value;
+
+  /* Magic & Arcane */
+  data.magicAndSpecialTraits = id("magicAndSpecialTraits").value;
+  data.arcaneStress = id("arcaneStress").value;
+  data.stressThreshold = id("stressThreshold").value;
+  data.spellSaveModifier = id("spellSaveModifier").value;
+  data.currentMiracleDV = id("currentMiracleDV").value;
+
+  /* Oaths */
+  data.oaths = [
+    id("oath1").value,
+    id("oath2").value,
+    id("oath3").value
+  ];
+
+  /* Currency */
+  data.copper = id("copper").value;
+  data.silver = id("silver").value;
+  data.gold = id("gold").value;
+
+  /* Weapons */
+  data.weapons = [];
+  document.querySelectorAll("#weaponsTable tr").forEach(tr => {
+    const inp = tr.querySelectorAll("input");
+    data.weapons.push({
+      weapon: inp[0].value,
+      range: inp[1].value,
+      damage: inp[2].value,
+      ap: inp[3].value,
+      traits: inp[4].value
+    });
+  });
+
+  /* Skills */
+  data.skills = [];
+  document.querySelectorAll("#skillsTable tr").forEach(tr => {
+    data.skills.push({
+      name: tr.querySelector(".skill-name").textContent,
+      diceColor: tr.querySelector(".skill-color").value,
+      skillRanks: tr.querySelector(".skill-ranks").value,
+      modifiers: tr.querySelector(".skill-mods").value,
+      totalDice: tr.querySelector(".skill-total").value
+    });
+  });
+
+  /* Item slots */
+  data.itemSlots = [];
+  document.querySelectorAll(".item-slot-input").forEach(inp => {
+    data.itemSlots.push(inp.value);
+  });
+
+/* Special Traits */
+data.specialTraits = [];
+document.querySelectorAll(".trait-row").forEach(row => {
+  data.specialTraits.push({
+    type: row.querySelector(".trait-type")?.value || "",
+    name: row.querySelector(".trait-name")?.value || "",
+    detail: row.querySelector(".trait-detail")?.value || ""
+  });
+});
+
+/* Magic & Miracles */
+data.magicMiracles = [];
+document.querySelectorAll(".magic-row").forEach(row => {
+  data.magicMiracles.push({
+    school: row.querySelector(".magic-school")?.value || "",
+    name: row.querySelector(".magic-name")?.value || "",
+    detail: row.querySelector(".magic-detail")?.value || ""
+  });
+});
+
+  return data;
+}
+
+/* ========= MULTI-SLOT LOCAL STORAGE ========= */
+
+let currentSlotId = null;
+
+function getSlotKey(id) {
+  return "oathhammer_slot_" + id;
+}
+
+function getSlotsMeta() {
+  try {
+    return JSON.parse(localStorage.getItem("oathhammer_slots") || "[]");
+  } catch (e) {
+    console.warn("Slots meta parse failed:", e);
+    return [];
+  }
+}
+
+function setSlotsMeta(list) {
+  localStorage.setItem("oathhammer_slots", JSON.stringify(list));
+}
+
+/* migrazione da vecchio singolo salvataggio, se esiste */
+function migrateLegacyStorage() {
+  const hasSlots = localStorage.getItem("oathhammer_slots");
+  const legacy = localStorage.getItem("oathhammer_sheet");
+  if (hasSlots || !legacy) return;
+
+  let counter = 1;
+  const id = String(counter);
+  localStorage.setItem("oathhammer_slotCounter", String(counter));
+  localStorage.setItem(getSlotKey(id), legacy);
+
+  try {
+    const data = JSON.parse(legacy);
+    const meta = {
+      id,
+      name: data.name || "Unnamed",
+      lineage: data.lineage || "?",
+      class: data.class || "?",
+      lastModified: new Date().toLocaleString()
+    };
+    setSlotsMeta([meta]);
+    localStorage.setItem("oathhammer_currentSlot", id);
+  } catch (e) {
+    console.warn("Legacy migration failed:", e);
+  }
+}
+
+/* salvataggio nello slot corrente */
+function saveToLocal() {
+  if (!currentSlotId) {
+    // nessuno slot selezionato: niente salvataggio
+    return;
+  }
+
+  const data = collectDataFromSheet();
+  localStorage.setItem(getSlotKey(currentSlotId), JSON.stringify(data));
+
+  const now = new Date().toLocaleString();
+
+  const slots = getSlotsMeta();
+  let meta = slots.find(s => s.id === currentSlotId);
+  if (!meta) {
+    meta = { id: currentSlotId };
+    slots.push(meta);
+  }
+  meta.name = (document.getElementById("name").value || "Unnamed");
+  meta.lineage = (document.getElementById("lineage").value || "?");
+  meta.class = (document.getElementById("class").value || "?");
+  meta.lastModified = now;
+  setSlotsMeta(slots);
+
+  renderCharacterSlots();
+}
+
+/* carica i dati di uno slot */
+function loadFromLocal(slotId) {
+  const id = slotId || currentSlotId;
+  if (!id) return;
+
+  const raw = localStorage.getItem(getSlotKey(id));
+  if (!raw) return;
+
+  try {
+    populateSheet(JSON.parse(raw));
+    updateAllSkills();
+    colorizeSkills();
+  } catch (e) {
+    console.warn("Local load failed:", e);
+  }
+}
+
+/* rendering lista slot nel popup */
+function renderCharacterSlots() {
+  const listEl = document.getElementById("characterSlotsList");
+  if (!listEl) return;
+
+  const slots = getSlotsMeta();
+  listEl.innerHTML = "";
+
+  if (!slots.length) {
+    const empty = document.createElement("div");
+    empty.className = "modal-empty";
+    empty.textContent = "No saved characters yet.";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  slots
+    .slice()
+    .sort((a, b) => {
+      // ordina per ultima modifica (più recente in alto)
+      const da = new Date(a.lastModified || 0).getTime();
+      const db = new Date(b.lastModified || 0).getTime();
+      return db - da;
+    })
+    .forEach((slot, index) => {
+      const wrap = document.createElement("div");
+      wrap.className = "character-slot" + (slot.id === currentSlotId ? " current" : "");
+
+      const name = slot.name || "Unnamed";
+      const lineage = slot.lineage || "?";
+      const cls = slot.class || "?";
+      const date = slot.lastModified || "";
+
+      wrap.innerHTML = `
+        <div class="slot-main">
+          <div class="slot-title">Slot ${index + 1}</div>
+          <div class="slot-name">${name}</div>
+          <div class="slot-meta">${lineage} – ${cls}</div>
+          <div class="slot-date">${date ? "Last modified: " + date : ""}</div>
+        </div>
+        <div class="slot-actions">
+          <button type="button" data-action="load" data-id="${slot.id}">Load</button>
+          <button type="button" data-action="delete" data-id="${slot.id}">Delete</button>
+        </div>
+      `;
+
+      listEl.appendChild(wrap);
+    });
+}
+
+/* gestione apertura/chiusura popup */
+function openCharacterModal(force = false) {
+  const overlay = document.getElementById("characterModalOverlay");
+  if (!overlay) return;
+
+  window.scrollTo({ top: 0, behavior: "instant" });
+
+  overlay.classList.add("show");
+  overlay.dataset.forceOpen = force ? "1" : "0";
+}
+
+function closeCharacterModal() {
+  const overlay = document.getElementById("characterModalOverlay");
+  if (!overlay) return;
+  if (overlay.dataset.forceOpen === "1") return; // se forzato, non si può chiudere
+  overlay.classList.remove("show");
+  overlay.dataset.forceOpen = "0";
+}
+
+/* creazione nuovo slot (vuoto) */
+function createNewSlot() {
+  let counter = parseInt(localStorage.getItem("oathhammer_slotCounter") || "0", 10);
+  if (!Number.isFinite(counter)) counter = 0;
+  counter++;
+  localStorage.setItem("oathhammer_slotCounter", String(counter));
+
+  const newId = String(counter);
+  currentSlotId = newId;
+  localStorage.setItem("oathhammer_currentSlot", newId);
+
+  // reset scheda
+  populateSheet({});
+  updateAllSkills();
+  colorizeSkills();
+
+  // salva immediatamente lo slot vuoto
+  saveToLocal();
+  renderCharacterSlots();
+  closeCharacterModal();
+}
+
+/* carica uno slot selezionato */
+function selectSlot(slotId) {
+  currentSlotId = slotId;
+  localStorage.setItem("oathhammer_currentSlot", slotId);
+  loadFromLocal(slotId);
+}
+
+/* elimina slot */
+function deleteSlot(slotId) {
+  const slots = getSlotsMeta().filter(s => s.id !== slotId);
+  setSlotsMeta(slots);
+  localStorage.removeItem(getSlotKey(slotId));
+
+  if (currentSlotId === slotId) {
+    currentSlotId = null;
+    localStorage.removeItem("oathhammer_currentSlot");
+    // pulisco la scheda
+    populateSheet({});
+    updateAllSkills();
+    colorizeSkills();
+    renderCharacterSlots();
+    // regola A: se slot corrente eliminato, apri popup per scegliere/creare
+    openCharacterModal(true);
+  } else {
+    renderCharacterSlots();
+  }
+}
+
+/* inizializzazione all'avvio */
+function initCharacterSlots() {
+  migrateLegacyStorage();
+
+  currentSlotId = localStorage.getItem("oathhammer_currentSlot");
+  const slots = getSlotsMeta();
+
+  // se slot non esiste più, reset
+  if (!currentSlotId ||
+      !slots.some(s => s.id === currentSlotId) ||
+      !localStorage.getItem(getSlotKey(currentSlotId))) {
+    currentSlotId = null;
+    localStorage.removeItem("oathhammer_currentSlot");
+  }
+
+  renderCharacterSlots();
+
+  if (currentSlotId) {
+    // 1) ricarica ultimo slot aperto
+    loadFromLocal(currentSlotId);
+  } else {
+    // 2) nessuno slot → apri popup per scegliere/creare (regola A)
+    openCharacterModal(true);
+  }
+}
+
+/* pulsanti toolbar / popup */
+
+document.getElementById("btnExport")
+  .addEventListener("click", () => {
+    const data = collectDataFromSheet();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (data.name || "character") + "_oathhammer.json";
+    a.click();
+  });
+
+document.getElementById("btnClearLocal")
+  .addEventListener("click", () => {
+    if (!confirm("Clear ALL local character slots? This cannot be undone.")) return;
+
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("oathhammer_slot_"))
+      .forEach(k => localStorage.removeItem(k));
+
+    localStorage.removeItem("oathhammer_slots");
+    localStorage.removeItem("oathhammer_currentSlot");
+    localStorage.removeItem("oathhammer_slotCounter");
+
+    currentSlotId = null;
+
+    populateSheet({});
+    updateAllSkills();
+    colorizeSkills();
+    renderCharacterSlots();
+    openCharacterModal(true);
+  });
+
+document.getElementById("btnCharacters")
+  .addEventListener("click", () => {
+    // apertura manuale: popup chiudibile
+    openCharacterModal(false);
+  });
+
+document.getElementById("characterModalClose")
+  .addEventListener("click", () => {
+    closeCharacterModal();
+  });
+
+document.getElementById("btnCreateSlot")
+  .addEventListener("click", () => {
+    createNewSlot();
+  });
+
+document.getElementById("characterSlotsList")
+  .addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === "load") {
+    if (!id) return;
+    if (!confirm("Load this character? Current sheet view will be replaced.")) return;
+
+      selectSlot(id);
+
+      const overlay = document.getElementById("characterModalOverlay");
+      if (overlay) overlay.dataset.forceOpen = "0";
+
+      closeCharacterModal();
+    } else if (action === "delete") {
+      if (!id) return;
+      if (!confirm("Delete this character slot permanently?")) return;
+      deleteSlot(id);
+    }
+  });
+
+/* On page load */
+window.addEventListener("DOMContentLoaded", () => {
+  initCharacterSlots();
+});
+
+// Salvataggio globale su ogni input/textarea/select
+document.addEventListener("input", (e) => {
+  if (!(e.target instanceof HTMLElement)) return;
+  if (e.target.closest(".toolbar")) return;
+  saveToLocal();
+});
+
+document.addEventListener("change", (e) => {
+  if (!(e.target instanceof HTMLElement)) return;
+  if (e.target.closest(".toolbar")) return;
+  saveToLocal();
+});
+
+["might","toughness","agility","willpower","intelligence","fate"].forEach(att => {
+    id(att).addEventListener("input", () => {
+        updateAllSkills();
+        saveToLocal();
+    });
+});
+
+/* ========== COLLAPSIBLE SECTIONS WITH MEMORY ========== */
+
+function restoreSectionState() {
+  document.querySelectorAll(".collapsible").forEach(header => {
+    const key = "collapse_" + header.dataset.section;
+    const content = document.querySelector(
+      `[data-section-content="${header.dataset.section}"]`
+    );
+    const saved = localStorage.getItem(key);
+
+    if (saved === "closed") {
+      header.classList.add("closed");
+      content.classList.add("closed");
+    }
+  });
+
+  updateToggleAllButton();
+}
+
+function updateToggleAllButton() {
+  const allClosed = [...document.querySelectorAll(".section-content")]
+    .every(sec => sec.classList.contains("closed"));
+
+  id("btnToggleAll").textContent = allClosed ? "Open All" : "Close All";
+}
+
+document.querySelectorAll(".collapsible").forEach(header => {
+  const section = header.dataset.section;
+  const content = document.querySelector(
+    `[data-section-content="${section}"]`
+  );
+
+  header.addEventListener("click", () => {
+    const isClosed = content.classList.toggle("closed");
+    header.classList.toggle("closed");
+
+    localStorage.setItem("collapse_" + section, isClosed ? "closed" : "open");
+
+    updateToggleAllButton();
+  });
+});
+
+id("btnToggleAll").addEventListener("click", () => {
+  const allClosed = [...document.querySelectorAll(".section-content")]
+    .every(sec => sec.classList.contains("closed"));
+
+  document.querySelectorAll(".section-content").forEach(sec => {
+    sec.classList.toggle("closed", !allClosed);
+  });
+
+  document.querySelectorAll(".collapsible").forEach(header => {
+    header.classList.toggle("closed", !allClosed);
+  });
+
+  // Save all states
+  document.querySelectorAll(".collapsible").forEach(header => {
+    const section = header.dataset.section;
+    localStorage.setItem(
+      "collapse_" + section,
+      header.classList.contains("closed") ? "closed" : "open"
+    );
+  });
+
+  updateToggleAllButton();
+});
+
+// run on load
+restoreSectionState();
+
+/* ---------- ADD / REMOVE WEAPONS ---------- */
+
+function addWeaponRow(data = {}) {
+  const tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td><input value="${data.weapon || ""}"></td>
+    <td><input value="${data.range || ""}"></td>
+    <td><input value="${data.damage || ""}"></td>
+    <td><input value="${data.ap || ""}"></td>
+    <td><input value="${data.traits || ""}"></td>
+    <td><button type="button" class="removeWeapon">X</button></td>
+  `;
+
+  tr.querySelector(".removeWeapon").addEventListener("click", () => {
+    tr.remove();
+    saveToLocal();
+  });
+
+  document.getElementById("weaponsTable").appendChild(tr);
+}
+
+document.getElementById("btnAddWeapon").addEventListener("click", () => {
+  addWeaponRow();
+  saveToLocal();
+});
+
+/* ---------- SKILL SEARCH FILTER ---------- */
+
+document.getElementById("skillSearch").addEventListener("input", () => {
+  const term = document.getElementById("skillSearch").value.toLowerCase();
+
+  document.querySelectorAll("#skillsTable tr").forEach(tr => {
+    const name = tr.querySelector(".skill-name").textContent.toLowerCase();
+    tr.style.display = name.includes(term) ? "" : "none";
+  });
+});
+
+/* ---------- SKILL SORTING ---------- */
+
+let skillSortMode = 0;
+/*
+0 = alphabetical
+1 = by attribute
+2 = by dice color
+*/
+
+const diceOrder = { "White": 1, "Red": 2, "Black": 3 };
+
+document.getElementById("btnSortSkills").addEventListener("click", () => {
+  const rows = [...document.querySelectorAll("#skillsTable tr")];
+
+  skillSortMode = (skillSortMode + 1) % 3;
+
+  if (skillSortMode === 0) {
+    rows.sort((a,b) =>
+      a.querySelector(".skill-name").textContent.localeCompare(
+        b.querySelector(".skill-name").textContent)
+    );
+    document.getElementById("btnSortSkills").textContent = "Sort: A→Z";
+  }
+
+  else if (skillSortMode === 1) {
+    rows.sort((a,b) => {
+      const A = (a.dataset.attrA || "").localeCompare(b.dataset.attrA || "");
+      if (A !== 0) return A;
+      return a.dataset.attrB?.localeCompare(b.dataset.attrB || "");
+    });
+    document.getElementById("btnSortSkills").textContent = "Sort: Attributes";
+  }
+
+  else if (skillSortMode === 2) {
+    rows.sort((a,b) => {
+      const A = diceOrder[a.querySelector(".skill-color").value];
+      const B = diceOrder[b.querySelector(".skill-color").value];
+      return A - B;
+    });
+    document.getElementById("btnSortSkills").textContent = "Sort: Dice";
+  }
+
+  const body = document.getElementById("skillsTable");
+  body.innerHTML = "";
+  rows.forEach(r => body.appendChild(r));
+
+  saveToLocal();
+});
+
+/* =========================================================
+   TOOLTIP PER LE SELECT (Lineage, Class, Oath 1-3)
+   Usa lo stesso popup delle skill
+========================================================= */
+
+document.querySelectorAll(".info-select").forEach(select => {
+  
+  // Determina il tipo del tooltip
+  const type = select.dataset.tooltipType;
+
+  // Mouse move → aggiorna posizione tooltip
+  select.addEventListener("mousemove", e => {
+    const value = select.value.trim();
+    if (!value) {
+      id("skillTooltip").style.display = "none";
+      return;
+    }
+
+    const tip = FIELD_TOOLTIPS[type]?.[value];
+    if (tip) {
+      const box = id("skillTooltip");
+      box.innerHTML = tip;
+      box.style.left = e.pageX + 20 + "px";
+      box.style.top = e.pageY + 20 + "px";
+      box.style.display = "block";
+    } else {
+      id("skillTooltip").style.display = "none";
+    }
+  });
+
+  // Uscita dal campo → nascondi
+  select.addEventListener("mouseleave", () => {
+    id("skillTooltip").style.display = "none";
+  });
+
+  // Cambio valore → reset temporaneo
+  select.addEventListener("change", () => {
+    id("skillTooltip").style.display = "none";
+  });
+
+});
+
+const MAGIC_DATA = {
+  "Elemental Magic": {
+  
+"Amphibious Transformation": "DIFFICULTY VALUE: 2\nDURATION: 1 hour\nRANGE: Touch\nELEMENT: Water\nYou target one creature you can touch.\nYour target can breathe underwater and may roll black dice for swimming related Athletics checks.",
+"Boil Blood": "DIFFICULTY VALUE: 7\nDURATION: 2d3 rounds\nRANGE: 40\nSPELL SAVE: DV5 Resilience\nELEMENT: Fire\nYou force a target within range to make a Spell Save. On a failure, the target suffers 3DD each round. This damage is rolled on black dice and ignores armor.",
+"Buoyancy": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: Self\nELEMENT: Water\nA humanoid targeted by this spell treats water as solid ground and can walk across it following the normal rules for movement. The target is, however, incapable of submerging beneath the water's surface while the spell is active. If cast upon a target that is already submerged, the target will be immediately pulled towards the water's surface.",
+"Burning Fury": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: Touch\nELEMENT: Fire\nThe target of this spell cannot be Frightened and gains a +1 bonus to melee damage rolls.",
+"Control Weather":  "DIFFICULTY VALUE: 7 (Ritual)\nDURATION: 1 day\nELEMENT: Air\nYou manipulate nature, creating rain or sunshine within the surrounding countryside. You can create intense conditions, such as heatwaves or sudden blizzards, though you may not produce impossible weather conditions that are entirely unnatural. The effects of this spell are most pronounced near the location of your ritual, and this can potentially draw unwanted attention to you. You may increase the spell’s duration by a number of days equal to your Magic check’s SV.",
+"Defy Rain": "DIFFICULTY VALUE: 1\nDURATION: 1 hour\nRANGE: Touch\nELEMENT: Water\nOne target that you touch repels rain for the spell’s duration. Any items carried by your target also remain dry for the spell’s duration. This spell does not protect equipment that is completely submerged in water.",
+"Disrupt Flight": "DIFFICULTY VALUE: 4\nRANGE: 300\nELEMENT: Air\nSPELL SAVE: DV5 Acrobatics\nA turbulent wind assaults a flying combatant within range. If the target fails their Spell Save, they will safely land on the ground directly below.",
+"Dragon’s Breath": "DIFFICULTY VALUE: 3\nRANGE: Cone AoE\nSPELL SAVE: DV3 Acrobatics\nELEMENT: Fire\nYou project a cone of blazing fire. Targets that fail their Spell Save suffer 8DD flaming damage. This spell imposes a -2 penalty to armor rolls.",
+"Drown Flames": "DIFFICULTY VALUE: 3\nRANGE: 200\nELEMENT: Water\nYou may extinguish all flames within range, regardless of their size. You have control over which fires you choose to drown.",
+"Earthen Snare": "DIFFICULTY VALUE: 1\nDURATION: 1 turn\nRANGE: 60\nELEMENT: Earth\nSPELL SAVE: DV3 Athletics\nThe target of this spell must pass a Spell Save or become Restrained for the spell’s duration.",
+"Elemental Immunity": "DIFFICULTY VALUE: 7\nDURATION: 1 hour\nRANGE: Touch\nELEMENT: Varies\nThe target of this spell is immune to flaming, frost, or lightning damage. You choose the damage type.",
+"Fireball": "DIFFICULTY VALUE: 5\nRANGE: 200 (Large AoE)\nSPELL SAVE: DV3 Acrobatics\nELEMENT: Fire\nYou hurl an exploding bolt of fiery energy. Combatants targeted by this Large AoE must pass a Spell Save or suffer 8DD flaming damage. This attack deals red damage dice and imposes a -2 penalty to armor rolls.",
+"Flight": "DIFFICULTY VALUE: 5\nDURATION: 1 minute\nRANGE: Self\nELEMENT: Air\nYou can fly up to 40 ft during your turn. If you suffer damage, the spell ends.",
+"Freezing Touch": "DIFFICULTY VALUE: 3\nRANGE: Touch\nSPELL SAVE: DV3 Athletics\nELEMENT: Water\nIf the target fails their Spell Save, they suffer 8DD frost damage that ignores armor. This spell does not provoke Opportunity Attacks.",
+"Ice Shards": "DIFFICULTY VALUE: 1 (Magic Missile)\nRANGE: 40\nSPELL SAVE: DV3 Acrobatics\nELEMENT: Water\nYou throw a shards of ice at nearby enemies. Up to three targets of your choice must pass a Spell Save or suffer 6DD.",
+"Ignite Weapon": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: Touch\nELEMENT: Fire\nA weapon you touch becomes enveloped in burning flame. This weapon deals flaming damage for the spell’s duration.",
+"Lightning Bolt": "DIFFICULTY VALUE: 4 (Magic Missile)\nRANGE: 200\nSPELL SAVE: DV4 Acrobatics\nELEMENT: Air\nA bolt of lightning leaps from your hand. One target within range must pass a Spell Save or suffer 8DD lightning damage.",
+"Locate Water": "DIFFICULTY VALUE: 4\nRANGE: 500\nELEMENT: Water\nYou can determine the location of clean drinking water within range.",
+"Magic Flame": "DIFFICULTY VALUE: 1\nDURATION: 1 minute\nRANGE: Self\nELEMENT: Fire\nYou produce a small flame in your open palm. This fire may assume an unnatural color and will burn for the spell’s duration or until you close your hand. The flame is incapable of harming creatures, though it can be used to ignite flammable objects and produces the same light as a candle.",
+"Part River": "DIFFICULTY VALUE: 5 (Ritual)\nDURATION: 1 minute\nRANGE: 100\nELEMENT: Water\nYou cause a river to suddenly flow in opposite directions. The water is suspended by an invisible barrier, creating a narrow walkway on the riverbed. This passage allows creatures to pass from one side of the river to the other.",
+"Petrification": "DIFFICULTY VALUE: 6\nDURATION: 1 minute\nRANGE: 20 ft\nSPELL SAVE: DV5 Athletics\nELEMENT: Earth\nThe target of this spell must pass a Spell Save or temporarily turn into a stone statue. While affected by this spell, the target may do nothing and cannot be harmed.",
+"Quicksand": "DIFFICULTY VALUE: 4\nDURATION: Encounter\nRANGE: 60 (Small AoE)\nSPELL SAVE: DV4 Athletics\nELEMENT: Earth\nTargets within range suddenly sink into the earth. Those targeted by this Small AoE must pass a Spell Save or become Restrained. Targets may use an Action each turn to attempt this Spell Save again.",
+"Resist Element": "DIFFICULTY VALUE: 3\nDURATION: 1 hour\nRANGE: Touch\nELEMENT: Varies\nThe target of this spell is resistant to flaming, frost, or lightning damage. You choose the damage type.",
+"Shield of Stone": "DIFFICULTY VALUE: 5\nDURATION: Encounter\nRANGE: Touch\nELEMENT: Earth\nThe target of this spell is resistant to physical damage.",
+"Steelskin": "DIFFICULTY VALUE: 9\nDURATION: Encounter\nRANGE: Touch\nELEMENT: Earth\nThe target of this spell is immune to physical damage.",
+"Stone Spear": "DIFFICULTY VALUE: 2\nRANGE: 200\nELEMENT: Earth\nSPELL SAVE: DV3 Acrobatics\nA stone lance suddenly bursts from the ground and threatens a combatant within range. If the target fails their Spell Save, they suffer 6DD. This attack imposes a -2 penalty to the target’s armor roll.",
+"Thunderclap": "DIFFICULTY VALUE: 6\nDURATION: 1 turn\nRANGE: 200 (Large AoE)\nSPELL SAVE: DV3 Discipline\nELEMENT: Air\nYou create a sudden explosion of light and sound. Targets must pass a Spell Save or become Blinded and Deafened for the spell’s duration.",
+"Tremor": "DIFFICULTY VALUE: 5\nDURATION: 1 turn\nRANGE: 200 (Large AoE)\nSPELL SAVE: DV3 Athletics\nELEMENT: Earth\nYou violently shake the earth. Those targeted by this Large AoE must pass a Spell Save or fall prone.",
+"Twin Lightning": "DIFFICULTY VALUE: 8 (Magic Missile)\nRANGE: 200\nSPELL SAVE: DV5 Acrobatics\nELEMENT: Air\nYou hurl two bolts of lightning at a combatant in range. The target of this spell must pass a Spell Save or suffer 16DD lightning damage.",
+"Wall of Fire": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: 100\nELEMENT: Fire\nYou create a wall of fire that is 5 ft wide and 10 ft tall. You determine the wall’s length, though it cannot exceed 40 ft. The wall of fire must manifest in a straight line within the spell’s range. The wall cannot be created within spaces currently occupied by combatants. Combatants passing through the wall suffer 8DD flaming damage. This spell deals red damage dice and ignores armor."
+
+  },
+  "Illusionist Magic": {
+  
+    "Charm": "DIFFICULTY VALUE: 3\nDURATION: 1 hour\nRANGE: 20\nOne target within range becomes charmed. You and your allies gain a +2 bonus to Diplomacy checks with the target of this spell.",
+"Dazzling Blur": "DIFFICULTY VALUE: 8\nDURATION: 1 hour\nRANGE: Self\nSPELL SAVE: DV4 Perception\nA shimmering haze surrounds you and distorts your appearance. When a combatant attempts to attack you, they must make a Spell Save. On a failure, the attack automatically fails.",
+"Destroy Illusion": "DIFFICULTY VALUE: 2\nRANGE: 200\nAll active illusions within range are immediately ended.",
+"Disrupt Thought": "DIFFICULTY VALUE: 3\nDURATION: 1d3 rounds\nRANGE: 60\nOne target within range becomes Confused for the spell’s duration.",
+"Distracting Illusion": "DIFFICULTY VALUE: 3\nDURATION: 1 turn\nRANGE: 100\nSPELL SAVE: DV4 Perception\nThe target must pass a Spell Save or incur a -2 penalty to attack rolls for the spell’s duration.",
+"Dominate": "DIFFICULTY VALUE: 6\nDURATION: 1d3 rounds\nRANGE: 40\nSPELL SAVE: DV3 Discipline\nA target within range must make a Spell Save. On a failure, you may control the target for the spell’s duration. The mind-controlled target obeys your orders.",
+"Doppelganger": "DIFFICULTY VALUE: 3\nDURATION: Encounter\nRANGE: Self\nAn identical copy of yourself lingers near you, mimicking your movements and sounds. This doppelganger is destroyed when you are hit with a successful attack, though you escape unscathed. This spell ends when the doppelganger is destroyed.",
+"Ghost Light": "DIFFICULTY VALUE: 4\nDURATION: 1 hour\nRANGE: 20\nYou create a small ethereal orb of light. The ghost light remains within 5 ft of you, casting light like a torch. As an auxiliary action, you can move the ghost light further from you in a direction of your choosing, though the orb must stay within 50 ft of you. You can dismiss the ghost light at any time as an auxiliary action. Melee attacks directed at the ghost light automatically end the spell.",
+"Hysteria": "DIFFICULTY VALUE: 7\nDURATION: 1d3 rounds\nRANGE: 100 (Small AoE)\nSPELL SAVE: DV3 Discipline\nVictims of this spell perceive their allies as enemy combatants. Targets that fail their Spell Save will attack the nearest combatant on each of their turns, friend or foe, while the spell remains active.",
+"Illusionary Figure": "DIFFICULTY VALUE: 3\nDURATION: 1 minute\nRANGE: 100\nSPELL SAVE: DV3 Perception\nA humanoid figure manifests within range of this spell. The illusion appears however you choose. While the spell is active, you can order the figure to move and act, though it cannot speak. Those who witness the figure can detect that it is an illusion if they perform a successful Spell Save.",
+"Incite Fear": "DIFFICULTY VALUE: 3\nRANGE: 40\nSPELL SAVE: DV3 Discipline\nEnemy combatants within range of this spell must pass a Spell Save or become Frightened.",
+"Invisibility": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: Self\nYou become Invisible. This spell will end prematurely if you take a hostile action or cast another spell.",
+"Mass Confusion": "DIFFICULTY VALUE: 5\nDURATION: 1d3 rounds\nRANGE: 100 (Large AoE)\nThis spell creates vivid hallucinations that overwhelm the senses. Targets of this spell are Confused for the spell’s duration.",
+"Masquerade": "DIFFICULTY VALUE: 6\nDURATION: 1 hour\nRANGE: Self\nSPELL SAVE: DV5 Perception\nYou adopt the likeness of another person whom you know, perfectly imitating their appearance. While this illusion remains active, you can also imitate the target’s speech. Those familiar with the person you are imitating will see through the illusion on a successful Spell Save.",
+"Mind Razor": "DIFFICULTY VALUE: 6\nRANGE: 20\nSPELL SAVE: DV4 Discipline\nThe target of this spell must make a Spell Save. On a failure, they suffer 5DD. This damage is rolled on black dice and ignores armor.",
+"Mirage": "DIFFICULTY VALUE: 1\nDURATION: 1 minute\nRANGE: 100\nSPELL SAVE: DV3 Perception\nYou create an illusion that occupies a 20 ft x 20 ft area. The illusion cannot move or produce sound. Creatures observing the mirage must make a Spell Save. On a failure, they cannot distinguish illusion from reality.",
+"Monstrous Illusion": "DIFFICULTY VALUE: 5\nDURATION: 1 minute\nRANGE: 60\nSPELL SAVE: DV3 Perception\nA terrifying creature appears within range. This beast takes the form of a large monster, such as an ogre or troll. While the spell is active, you can order the monster to act. The creature can move and produce terrifying noises while remaining within 500 ft of you. Those who witness the monster will detect that it is an illusion if they perform a successful Spell Save.",
+"Move Object": "DIFFICULTY VALUE: 1\nRANGE: 40\nA small object within range blinks out of reality and reappears at another location within range that you can see. Affected items must be solid, inanimate, and no larger than your fist. This spell cannot affect held, tethered, or worn items.",
+"Obscure": "DIFFICULTY VALUE: 2\nDURATION: 1 hour\nRANGE: 20\nYou and allies within range gain a +2 bonus to Stealth checks for the spell’s duration.",
+"Perfect Sight": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: Touch\nThe target of this spell cannot be fooled by illusions and can see Invisible combatants.",
+"Phantom Army": "DIFFICULTY VALUE: 8 (Ritual)\nDURATION: 1 day\nRANGE: 500\nSPELL SAVE: DV4 Perception\nYou create an army that consists of 1d6 x 100 phantom warriors. These illusions can move, produce sound, and will obey orders issued by the caster. The army is composed of humanoid infantry and can be divided into regiments, though each regiment must remain within 100 ft of another. Those who witness the army will detect that it is an illusion if they perform a successful Spell Save.",
+"Quiescence": "DIFFICULTY VALUE: 1\nDURATION: 1d3 rounds\nRANGE: 20\nSPELL SAVE: DV3 Discipline\nIf the target fails their Spell Save, they cannot move, speak, or perform actions for the spell's duration. If the target receives damage, the spell is immediately ended.",
+"Shapechange": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: Self\nSPELL SAVE: DV5 Perception\nYou can completely change your appearance so that you resemble another humanoid. Anyone who scrutinizes you can detect the illusion with a successful Spell Save.",
+"Spectral Hand": "DIFFICULTY VALUE: 1\nDURATION: 1 hour\nRANGE: 60\nYou can manipulate a visible item within range in the same manner that a human hand could. You can move the object 5 ft or turn it in place, assuming an adult human could achieve such a feat with one hand. You cannot move worn or held items, though you may otherwise manipulate them. You cannot harm a combatant with this spell.",
+"Thought Ward": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: 20\nYou and allies within range gain a +1 bonus to Discipline checks for the spell’s duration.",
+"Vanish": "DIFFICULTY VALUE: 3\nRANGE: 40\nYou disappear and reappear in an unoccupied space within range. This spell does not provoke Opportunity Attacks.",
+"Zone of Invisibility": "DIFFICULTY VALUE: 6\nDURATION: 1 minute\nRANGE: 20\nYou and allies within range of this spell become Invisible. This spell will end prematurely if affected targets take a hostile action or cast a spell."
+
+  },
+  "Imperial Magic": {
+    
+"Alarm": "DIFFICULTY VALUE: 1 (Ritual)\nDURATION: 1 day\nRANGE: 200\nYou create a perimeter within range that can be anywhere from 5 ft to 200 ft in diameter. You may also use this spell to target a threshold, such as a window or door. Any creature entering the perimeter will trigger a silent alarm that you perceive with your mind. You can direct the spell to only trigger when activated by specific creatures. Rather than create a perimeter, you can target an object. When this object is touched, you will be alerted via the silent alarm. You can adjust the trigger so that the alarm only activates under specific conditions.",
+"Arcane Detection": "DIFFICULTY VALUE: 1\nDURATION: 1 hour\nRANGE: Self\nYou detect the presence of magical items and active spells within 200 ft. This spell can affect your senses in a variety of ways. You may hear buzzing that increases in volume the closer you are to magic, or observe strange colored auras that linger around magical energy.",
+"Arrow Attraction": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: 200\nYou target one combatant within range and place a hex upon them. Ranged attack rolls directed at the target of this spell gain a +1 bonus for the spell's duration.",
+"Barricade": "DIFFICULTY VALUE: 3\nDURATION: 1 day\nRANGE: Touch\nYou magically lock a door or gate, preventing it from being opened with a key or lockpick. The target of this spell can still be destroyed, forcefully opened, and breached with the open spell.",
+"Chain Breaker": "DIFFICULTY VALUE: 1\nRANGE: 40\nThe target of this spell is no longer Restrained.",
+"Counterspell": "RANGE: 200\nOnce per round, you may attempt to thwart the spellcasting of another. When a combatant within range attempts to cast a spell, you may force them to make an opposed Magic check. If you win the Magic check, the opponent’s spell fails. You may also cast this spell on your turn in an attempt to dispel an active enemy spell. You end the spell if you successfully meet or exceed its DV. This dispel cannot be thwarted by an enemy counterspell.",
+"Detect Poison": "DIFFICULTY VALUE: 1\nRANGE: Touch\nYou touch a liquid-bearing object. If the liquid within is poisoned, it will appear sickly green.",
+"Eldritch Arrow": "DIFFICULTY VALUE: 2 (Magic Missile)\nRANGE: 100\nSPELL SAVE: DV4 Acrobatics\nThe taget must pass a Spell Save or suffer 3DD that ignores armor.",
+"Empower Weapon": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: Touch\nYou touch a weapon, granting it a +1 bonus to damage rolls.",
+"Enhance Anatomy": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: 20\nYou target one ally within range and grant them a +1 bonus to Acrobatics, Athletics, and Resilience checks for the spell’s duration.",
+"Flash of Light": "DIFFICULTY VALUE: 2\nRANGE: Cone AoE\nSPELL SAVE: DV2 Discipline\nYou project a Cone AoE of blinding light. Targets of this spell become Blinded for 1 turn if they fail their Spell Save.",
+"Magic Bridge": "DIFFICULTY VALUE: 3\nDURATION: 1 minute\nRANGE: 60\nYou create a bridge of arcane energy. The bridge is 10 ft x 50 ft and capable of supporting limitless weight. The bridge can levitate in the air at any height. You may choose to end the spell as an auxiliary action. You can only maintain one active magic bridge at a time.",
+"Missile Ward": "DIFFICULTY VALUE: 5\nDURATION: Encounter\nRANGE: 20\nRanged attack rolls performed against you and those within range of this spell incur a -3 penalty.",
+"Mute": "DIFFICULTY VALUE: 3\nDURATION: 1 turn\nRANGE: 60\nSPELL SAVE: DV3 Resilience\nIf the target of this spell fails their Spell Save, they lose the ability to speak and perform Magic checks for the spell's duration.",
+"Neutralize Magic": "DIFFICULTY VALUE: 5\nDURATION: Encounter\nRANGE: 100\nMagic items carried by the target of this spell are rendered mundane and stripped of special properties for the spell's duration.",
+"Open": "DIFFICULTY VALUE: 5\nRANGE: Touch\nYou open one lock or unlatch a door.",
+"Reinforce Armor": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: Touch\nThe target of this spell gains a +1 bonus to armor rolls.",
+"Repel Weapons": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: Self\nWhen you are struck by an attack, you may roll 2 black armor dice rather than use your normal armor roll. Only magic damage can modify this armor roll.",
+"Scry": "DIFFICULTY VALUE: 5 (Ritual)\nThis spell allows you to ask a single question in an attempt to learn secret knowledge. If the spell is successfully cast, you glean some insight into the information you seek. This can be an intuitive feeling regarding a future event or a sudden vision. The higher your SV, the more clearly you discern this knowledge. You cannot attempt to scry the same knowledge more than once per week. The GM should roll this Magic check in secret, as failure may result in the spellcaster experiencing misleading visions.",
+"Shielding Sphere": "DIFFICULTY VALUE: 5\nDURATION: Encounter\nRANGE: Self\nWhen you are struck by an attack, you may roll 4 black armor dice rather than use your normal armor roll.",
+"Spell Shield": "DIFFICULTY VALUE: 5\nDURATION: Encounter\nRANGE: Self\nYou cannot be affected by hostile spells with a Difficulty Value of 4 or less.",
+"Stagger": "DIFFICULTY VALUE: 1\nDURATION: 1 turn\nRANGE: 20\nThe target of this spell incurs a -1 penalty to attack and defense rolls until the beginning of your next turn.",
+"Stabilize": "DIFFICULTY VALUE: 1\nRANGE: Touch\nIf the target of this spell has been reduced to 0 Grit Points, they regain 1 Grit Point.",
+"Teleport": "DIFFICULTY VALUE: 6 (Ritual)\nYou and your party travel to a location within 10 hexes of the territory you are currently in. You can transport no more than a dozen creatures in this manner, including mounts and pack animals.",
+"Time Suspension": "DIFFICULTY VALUE: 8\nRANGE: 20\nYou and allies within range gain an additional action during the turn this spell is cast. Targets of this spell may also double their movement and do not provoke Opportunity Attacks during this turn. This powerful spell can only be cast once per day.",
+"Tongues": "DIFFICULTY VALUE: 4\nDURATION: 1 hour\nRANGE: Self\nYou are capable of speaking and understanding all languages.",
+"Wall of Force": "DIFFICULTY VALUE: 5\nDURATION: 1 minute\nRANGE: 100\nYou create a wall of invisible energy that is 5 ft wide and 10 ft tall. You determine the wall’s length, though it cannot exceed 50 ft. The wall must manifest in a straight line within the spell’s range. The wall cannot be created within spaces currently occupied by combatants. Nothing can pass through the wall, though the wall does not obstruct vision.",
+"Whisper": "DIFFICULTY VALUE: 1\nRANGE: 60\nYou send a telepathic message, ten words or less, to a humanoid within range."
+
+  },
+  "Infernal Magic": {
+  
+"Abyssal Assassin": "DIFFICULTY VALUE: 6 (Ritual)\nRANGE: 500\nSPELL SAVE: DV4 Acrobatics\nYou direct a demon to attack a target within range. You do not need to see this target, only know their name. If the target fails their Spell Save, the demon materializes in a fiery flash and deals 8DD. This damage is rolled on red dice and imposes a -4 penalty to the target’s armor roll.",
+"Brimstone": "DIFFICULTY VALUE: 3\nDURATION: 1d3 rounds\nRANGE: 100 (Small AoE)\nSPELL SAVE: DV3 Resilience\nCombatants targeted by this Small AoE must pass a Spell Save or suffer 2DD that ignores armor. Targets that fail their Spell Save are also Blinded for the spell's duration.",
+"Blazing Step": "DIFFICULTY VALUE: 3\nRANGE: 40\nYou vanish in an explosion of flame and reappear in an unoccupied space within range. Combatants within 5 ft of you when this spell is cast suffer 4DD flaming damage. This spell does not provoke Opportunity Attacks.",
+"Blood Pact": "DIFFICULTY VALUE: 3\nDURATION: Encounter\nRANGE: 20\nOne target within range becomes resistant to all forms of damage. If the target of this spell suffers damage from an attack, you also lose 1 Grit Point.",
+"Conjure Imps": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: 60\n1d3 imps materialize in unoccupied spaces within range. These infernal beings are under your control and act during your turn. The imps return to their native plane upon the spell's conclusion.",
+"Demonic Transfiguration": "DIFFICULTY VALUE: 4\nDURATION: 1 minute\nRANGE: Self\nYou transform into a demonic creature. You can fly up to 25 ft during each of your turns. You also gain a +2 bonus to melee attack and damage rolls along with natural weapons that deal flaming damage. When you are struck by an attack, you may roll 3 black armor dice rather than use your normal armor roll.",
+"Enthrall Demon": "DURATION: 1 day\nRANGE: 60\nSPELL SAVE: Discipline (Contested)\nYou force a demon within range to make a Spell Save that is contested by your Magic check. If the target fails, you gain control of the demon and force it to obey your commands. Enthralled demons act during your turns.",
+"Hell Lance": "DIFFICULTY VALUE: 4 (Magic Missile)\nRANGE: 200\nSPELL SAVE: DV3 Agility\nYou project a narrow beam of fiery energy at a target within range. If the target fails their Spell Save, they suffer 10DD. This damage is rolled on red dice and imposes a -3 penalty to armor rolls.",
+"Infernal Portal": "DIFFICULTY VALUE: 3\nDURATION: 1d6 rounds\nRANGE: 60\nAn infernal horror manifests within range; you choose which unoccupied 10 ft x 10 ft area the demon appears. The demon will attack the nearest combatant on each of its turns. The infernal horror feels no loyalty to you, and it will gladly murder you if presented with the opportunity. The infernal horror disappears in a burst of flame upon the spell's conclusion.",
+"Inferno": "DIFFICULTY VALUE: 3\nDURATION: 1d6 rounds\nRANGE: 200 (Small AoE)\nSPELL SAVE: DV3 Acrobatics\nYou target an area within range and create a Small AoE of blazing fire that remains for the spell's duration. Combatants who begin their turn within or enter the fire must make a Spell Save or suffer 6DD flaming damage. This attack deals red damage dice and imposes a -2 penalty to armor rolls.",
+"Limbo": "DIFFICULTY VALUE: 6\nDURATION: 2d3 rounds\nSPELL SAVE: DV4 Fortune\nRANGE: 100\nYou target one combatant within range and attempt to trap them in an abyssal plane. If the target fails their Spell Save, they are pulled into a black portal and remain trapped in another plane for the spell’s duration. When the spell ends, the target is returned to the location they occupied and suffers 4DD flaming damage.",
+"Pandemonium": "DIFFICULTY VALUE: 2\nDURATION: 1d3 rounds\nRANGE: 40\nAll enemy combatants within range become Confused, overwhelmed by the visions of madness and the tormented screams of lost souls.",
+"Possession": "DIFFICULTY VALUE: (Contested Ritual)\nDURATION: 1 day\nRANGE: 500\nSPELL SAVE: Discipline (Contested)\nYour soul temporarily leaves your body, tethered to its corporeal host by a silver cord. While disembodied in this manner, you assault a target within range, attempting to wrest control of their body. The target of this spell must make a Discipline check that is contested by your Magic check. On a failure, you gain control of the target for the spell's duration. While this spell is active, your physical form is Stunned. If your actual body sustains any damage, this spell immediately ends.",
+"Ray of Agony": "DIFFICULTY VALUE: 5 (Magic Missile)\nDURATION: 1 turn\nRANGE: 60\nSPELL SAVE: DV4 Resilience\nA target within range must pass a Spell Save or suffer 6DD that ignores armor. If the target fails the Spell Save, they are also Enfeebled for the spell's duration.",
+"Sulfurous Aura": "DIFFICULTY VALUE: 1\nDURATION: Encounter\nRANGE: 40\nEnemy combatants within range of this spell incur a -1 penalty to attack rolls and Resilience checks.",
+"Summon Retainer": "DIFFICULTY VALUE: 5 (Ritual)\nDURATION: 1 day\nRANGE: 5\nYou draw a pentagram within a magic circle before contacting your patron. If the ritual is a success, your demon patron will send an abyssal knight to serve you. The knight behaves as a retainer and will return to its native plane at the dawn of the following day. Your patron will only allow you to have one abyssal knight at a time, regardless of how many times you perform this ritual.",
+"Tear Reality": "DIFFICULTY VALUE: 5\nDURATION: 1d6 rounds\nRANGE: 100\nYou tear a hole in the mortal plane, allowing the abyss to seep through. All enemies within range become Confused and Ignited for the spell's duration.",
+"Vision of Torment": "DIFFICULTY VALUE: 2\nDURATION: 1d3 rounds\nRANGE: 100\nThe target is Confused and suffers 2DD each turn that ignores armor.",
+"Unholy Weapons": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: 100\nAllies within range deal flaming and magic damage."
+
+  },
+  "Runic Magic": {
+
+"Exalted Rune of Adamant": "DIFFICULTY VALUE: 6\nTYPE: Armor\nOnce activated, the wearer becomes immune to physical damage and resistant to all other forms of damage for 2d3 rounds.",
+"Exalted Rune of Death": "DIFFICULTY VALUE: 6\nTYPE: Weapon\nOnce activated, the weapon’s next successful attack gains a +6 bonus to its damage roll. Combatants killed by this attack die in a gruesome and spectacular manner.",
+"Exalted Rune of Fate": "DIFFICULTY VALUE: 5\nTYPE: Talisman\nOnce activated, this rune grants a +1 bonus to all rolls you make for the remainder of the encounter.",
+"Exalted Rune of Healing": "DIFFICULTY VALUE: 6\nTYPE: Talisman\nOnce activated, this rune restores all missing Grit Points to the talisman’s owner.",
+"Exalted Rune of Power": "DIFFICULTY VALUE: 5\nTYPE: Weapon\nOnce activated, the weapon’s next successful attack will deal black damage dice.",
+"Exalted Rune of Rebuke": "DIFFICULTY VALUE: 4\nTYPE: Talisman\nOnce activated, enemy combatants within 100 ft incur a -3 penalty to Magic checks for the remainder of the encounter.",
+"Exalted Rune of Spite": "DIFFICULTY VALUE: 5\nTYPE: Armor\nOnce activated, this rune deals 8DD to each enemy that hits you with a melee attack for the remainder of the encounter.",
+"Rune of Arcane Resistance": "DIFFICULTY VALUE: 4\nTYPE: Warding\nYou and allies within 40 ft of this rune gain a +1 bonus to Spell Saves. Enemy spellcasters incur a -1 penalty to Magic checks while within 200 ft of the rune.",
+"Rune of the Dauntless": "DIFFICULTY VALUE: 1\nTYPE: Talisman\nThis talisman grants a +1 bonus to Discipline checks. You may use an action to automatically recover from being Frightened.",
+"Rune of Deflection": "DIFFICULTY VALUE: 5\nTYPE: Warding\nCombatants within 40 ft of this rune gain a +3 bonus to ranged attack defense rolls.",
+"Rune of Disintegration": "DIFFICULTY VALUE: 5\nTYPE: Warding\nThis rune activates when an enemy combatant moves within 15 ft of it. The targeted combatant must make a DV5 Acrobatics check. On a failure, the target receives 8DD. This damage is rolled on black dice and ignores armor. Combatants within 5 ft of the target also suffer 4DD that ignores armor. Once activated, this rune ceases to function, even if it was permanent.",
+"Rune of Dragon Snaring": "DIFFICULTY VALUE: 6\nTYPE: Talisman\nLarge and huge combatants within 200 ft may not fly or Run.",
+"Rune of Evasion": "DIFFICULTY VALUE: 5\nTYPE: Talisman\nThe wearer of this talisman does not provoke Opportunity Attacks.",
+"Rune of Fell Force": "DIFFICULTY VALUE: 3\nTYPE: Weapon\nThis weapon gains the brutal trait. Only melee weapons can receive this rune.",
+"Rune of Fortitude": "DIFFICULTY VALUE: 4\nTYPE: Talisman\nThis talisman grants its wearer +1 GP and a +1 bonus to Resilience checks.",
+"Rune of Fortune": "DIFFICULTY VALUE: 1\nTYPE: Talisman\nThis talisman grants a +1 bonus to Fortune checks.",
+"Rune of Giant Slaying": "DIFFICULTY VALUE: 5\nTYPE: Talisman\nThe distance you can jump is doubled, and you cannot be harmed from jumping this high. Your melee attacks gain a +1 bonus to damage rolls against large and huge combatants.",
+"Rune of Magma": "DIFFICULTY VALUE: 3\nTYPE: Talisman\nThis rune grants immunity to flaming damage.",
+"Rune of Molten Metal": "DIFFICULTY VALUE: 5\nTYPE: Weapon\nThis weapon deals flaming damage and imposes a -1 penalty to armor rolls.",
+"Rune of Protection": "DIFFICULTY VALUE: 3\nTYPE: Talisman\nThis talisman grants a +1 bonus to Spell Saves.",
+"Rune of Replenishment": "DIFFICULTY VALUE: 6\nTYPE: Weapon\nThis rune may only be placed upon a bow. This weapon does not require ammunition and fires arcane bolts that deal magic damage.",
+"Rune of Resistance": "DIFFICULTY VALUE: 4\nTYPE: Armor\nThis rune grants a +1 bonus to armor rolls.",
+"Rune of Return": "DIFFICULTY VALUE: 5\nTYPE: Weapon\nThe weapon will return to its owner after being thrown, allowing the wielder to make melee attacks against targets within 20 ft.",
+"Rune of Sanctity": "DIFFICULTY VALUE: 4\nTYPE: Weapon\nThis weapon deals holy damage and glows near demons and undead.",
+"Rune of Seeking": "DIFFICULTY VALUE: 4\nTYPE: Weapon\nThis weapon gains a +1 bonus to attack rolls.",
+"Rune of Slaying": "DIFFICULTY VALUE: 6\nTYPE: Weapon\nThis weapon deals black damage dice against large and huge combatants.",
+"Rune of Smiting": "DIFFICULTY VALUE: 4\nTYPE: Weapon\nThis weapon gains a +1 bonus to damage rolls.",
+"Rune of Stone": "DIFFICULTY VALUE: 6\nTYPE: Armor\nDamage rolls performed against the armor's wearer incur a -1 penalty.",
+"Rune of Sundering": "DIFFICULTY VALUE: 4\nTYPE: Weapon\nThis weapon imposes a -1 penalty to its target’s armor rolls.",
+"Rune of Umbral Escape": "DIFFICULTY VALUE: 3\nTYPE: Talisman\nAs an auxiliary action, you may teleport to a space within 20 ft. This movement does not provoke Opportunity Attacks. You may use this rune once per encounter.",
+"Rune of Wrath": "DIFFICULTY VALUE: 6\nTYPE: Warding\nEnemy combatants beginning their turn within 20 ft of this rune suffer 2DD that ignores armor."
+
+  },
+  "Stygian Magic": {
+
+"Affliction": "RANGE: 100\nSPELL SAVE: Resilience (Contested)\nYour Magic check is opposed by the target’s Spell check. The target loses a number of Grit Points equal to your spell’s Success Value. This damage ignores armor.",
+"Army of Darkness": "DIFFICULTY VALUE: 8 (Ritual)\nDURATION: 1 day\nRANGE: 1 mile\nYou reanimate all corpses within range into undead servants. Targeted corpses within range are reanimated as zombies if they still have flesh, or skeletons if they have been deceased for an extended period of time. Under normal circumstances, this spell will create 1 unit of skeleton soldiers or a zombie swarm. If cast near a graveyard or battlefield, you will create 2d6 regiments. These undead are under your control and act during your turn. Upon the spell's conclusion, zombies collapse into corpses, and skeletons crumble into piles of bone.",
+"Avatar of Undeath": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: Self\nYou cannot be Demoralized, Diseased, Exhausted, Fatigued, Frightened, Poisoned, or Stunned for the spell's duration.",
+"Cobra Bile": "DIFFICULTY VALUE: 1 (Magic Missile)\nDURATION: 1d3 rounds\nRANGE: 20\nSPELL SAVE: DV3 Acrobatics\nYou project a stream of vile poison from your mouth. The target must pass a Spell Save or become Blinded.",
+"Commune with the Dead": "DIFFICULTY VALUE: 3 (Ritual)\nDURATION: 10 minutes\nYou attempt contact with the spirit of a deceased individual. If you possess a piece of their remains or one of their sentimental items, you gain a +1 bonus to the Magic check. If the ritual is succesful, you may ask questions of the deceased for the spell's duration. The spirit does not have to comply with your questioning and may need to be incentivized to cooperate. You can attempt to force coercion through an opposed Discipline check. If you fail the Discipline check and roll a 1, the spirit may possess your body. Repeatedly forcing a spirit into the mortal plane will only result in drawing their ire and makes other spirits resistant to your call. The DV for this ritual increases by +1 for every additional attempt made to commune with the same spirit. Spirits contacted in this manner can only reveal knowledge they had in life, and they may request a favor of you before they answer your questions.",
+"Curse": "DIFFICULTY VALUE: 4 (Ritual)\nYou craft a doll in the likeness of a person you wish to curse. You must have blood, fingernail trimmings, or hair from your target to cast this spell. If the ritual is successful, your target must make a Fortune check every day at midnight. The first Fortune check performed has a Difficulty Value of 1. The DV increases by 1 with every additional Fortune check. On a failure, the target loses 1 Grit Point that cannot be restored while the curse is active. The target continues losing Grit Points in this manner until tragedy ends their life or the curse is lifted. If the curse is lifted, the target will regain 1 Grit Point lost to the curse each day until they have been fully restored.",
+"Dominate Undead": "DIFFICULTY VALUE: 3\nDURATION: 1 hour\nRANGE: 100\nSPELL SAVE: Discipline (Contested)\nAll undead within range must make a Spell Save, which is contested by your Magic check. Targets that fail must obey your commands for the spell's duration. If you try to dominate undead that are being controlled by another mage, you must make an opposed Magic check with them. On a success, you take control of their minions.",
+"Familiar Spirit": "DIFFICULTY VALUE: 3\nDURATION: 1 day\nFamiliars are spirits that possess limited clairvoyance. A familiar bound to a conjurer through this ritual must answer the spellcaster's questions truthfully, but will attempt to do so in a manner that provokes anger, confusion, fear, or misery. The spirit is not compelled to elaborate when providing answers, only to offer enough information to satisfy the question. Familiar spirits will also grant their conjurer a +1 bonus to Magic checks when casting Stygian spells. The spirit can manifest in the guise of a small animal, though this form is ethereal and cannot interact with objects.",
+"Geas": "DIFFICULTY VALUE: 6 (Ritual)\nDURATION: 1 week\nRANGE: Touch\nYou draw arcane glyphs onto the flesh of your victim, using paint or the victim's blood. You issue a single order to this victim; if this order is not performed before the spell's conclusion, the target dies.",
+"Ghostly Form": "DIFFICULTY VALUE: 5\nDURATION: 1 minute\nRANGE: Self\nYou are immune to physical damage and cannot be Restrained. You may also pass through physical objects.",
+"Hex": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: 100\nSPELL SAVE: DV3 Fortune\nThe target must pass a Spell Save or incur a -1 penalty to all rolls.",
+"Hypnotic Gaze": "DIFFICULTY VALUE: 3\nDURATION: 1 turn\nRANGE: 20\nSPELL SAVE: DV3 Discipline\nA target within range must pass a Spell Save or become Stunned.",
+"Meat Puppet": "DIFFICULTY VALUE: 1 (Ritual)\nDURATION: 1 day\nYou create a zombie from a nearby corpse that acts like a bonded retainer. The zombie will collapse into a corpse upon the dawn of the following day.",
+"Monstrous Transformation": "DIFFICULTY VALUE: 4\nDURATION: 1 hour\nRANGE: Self\nYou transform into an ogre or troll (your choice) for the spell's duration. While this spell is active, your skills and special traits reflect those of the creature you have transformed into. You may not benefit from any other skills or special traits you normally possess while in this monstrous form. Worn clothing and armor are destroyed upon casting this spell. You may end this spell at any time as an action, reverting to your normal form. This spell takes a considerable toll on your health and sanity; as a result, you are reduced to 1 Grit Point upon the spell's conclusion and may not cast spells again for another hour.",
+"Necrotic Vigor": "DIFFICULTY VALUE: 2\nRANGE: 100\nAll undead within range regain 1d6 Grit Points.",
+"Noxious Cloud": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: 100 (Large AoE)\nSPELL SAVE: DV2 Resilience\nYou create a cloud of putrid gas that lingers at a location within range. Combatants beginning their turn or passing through the cloud must pass a Spell Save or become Dazed.",
+"Raise Dead": "DIFFICULTY VALUE: 3\nDURATION: 1 hour\nRANGE: 100\nTargeted corpses within range are reanimated as zombies if they still have flesh, or skeletons if they have consist only of bones. These undead are under your control and act during your turn. Upon the spell's conclusion, zombies collapse into corpses, and skeletons crumble into piles of bone.",
+"Reptilian Regrowth": "DIFFICULTY VALUE: 4\nDURATION: Encounter\nRANGE: 20\nWhen the target of this spell receives damage, they roll 4 black dice; each success restores 1 lost Grit Point.",
+"Serpent’s Kiss": "DIFFICULTY VALUE: 1\nRANGE: Touch\nSPELL SAVE: DV4 Resilience\nYour target must pass the Spell Save or become Poisoned.",
+"Shroud of Darkness": "DIFFICULTY VALUE: 3\nDURATION: 1d6 rounds\nRANGE: 100 (Large AoE)\nYou suffocate an area with darkness. Mundane sources of light cannot pierce this darkness.",
+"Soul Steal": "DIFFICULTY VALUE: 6\nRANGE: 20\nSPELL SAVE: DV5 Discipline\nIf your target fails their Spell Save, they suffer 5DD. This damage is rolled on black dice and ignores armor. If your target is slain by this spell, you can seize their soul and store it within a diamond. As an auxiliary action, you may consume this soul and restore all lost Grit Points. A diamond can contain no more than one soul. If a diamond containing a soul is destroyed, the victim returns to life.",
+"Specter's Call": "DIFFICULTY VALUE: 2\nDURATION: Encounter\nRANGE: 100\nYou summon a ghost that appears within an unoccupied space within range. The ghost acts on your turn and is under your control. You may only control 1 ghost at a time, and this undead spirit will dissipate upon the spell's conclusion.",
+"Terror": "DIFFICULTY VALUE: 2\nRANGE: 60\nSPELL SAVE: DV3 Discipline\nYou are shrouded in dark energy and radiate death. Enemy combatants within range must pass a Spell Save or become Frightened.",
+"Vengeful Riposte": "DIFFICULTY VALUE: 3\nDURATION: Encounter\nRANGE: 40\nAllies within range may immediately perform an attack when reduced to 0 Grit Points, before succumbing to death.",
+"Wither": "DIFFICULTY VALUE: 2\nDURATION: 1 turn\nRANGE: 60\nSPELL SAVE: DV4 Resilience\nThe target of this spell must pass a Spell Save or become Enfeebled.",
+"Word of Death": "DIFFICULTY VALUE: 7\nRANGE: 20\nSPELL SAVE: DV3 Fortune\nYou speak an ancient word of power capable of stealing life. The target of this spell must pass a Spell Save or immediately die.",
+"Wyrm Flesh": "DIFFICULTY VALUE: 3\nDURATION: Encounter\nRANGE: Touch\nThe target of this spell develops reptilian scales and gains a +2 bonus to armor rolls."
+
+  },
+  "Druidic Miracles": {
+
+"Awaken Willow": "RANGE: Touch\nDURATION: 1 day\nOne tree within range is transformed into a spriggan. This creature is under your control and acts during your turn. The spriggan must remain on soil and will immediately die if it leaves contact with the earth.",
+"Bark Shield": "RANGE: 20\nDURATION: Encounter\nOne ally within range gains a +2 bonus to armor rolls. The thick bark protection falls off the target upon the miracle's conclusion.",
+"Bestial Transformation": "RANGE: Self\nDURATION: 1 hour\nYou transform into an animal of your choice for the miracle's duration. While this miracle is active, your skills and special traits reflect those of the creature you have transformed into. You may not benefit from any other skills or special traits you normally possess while in this form. Worn clothing and armor are destroyed upon casting this miracle; held items are dropped to the ground. You may revert to your normal form as an auxiliary action. When you revert to your normal form, your Grit Points return to what they were before you performed this miracle.",
+"Call Wolves": "RANGE: 100\nDURATION: Encounter\nWhile in a rural environment, you may summon 1d3+1 timber wolves that appear in unoccupied spaces within range. These timber wolves are under your control and act during your turn. The wolves return to the wild upon the miracle's conclusion.",
+"Daylight": "RANGE: 1 mile\nDURATION: 1 hour\nAffected rural land within range is illuminated by daylight. This light behaves just like natural sunlight.",
+"Detect Life": "DIFFICULTY VALUE: 4 (Ritual)\nRANGE: 500\nYou can detect all living creatures within the miracle's range. Not only do you learn how many living creatures are within range, but also their nature and location.",
+"Direct Lightning": "RANGE: 200\nSPELL SAVE: DV5 Acrobatics\nYou can target up to 3 combatants within range and strike them with lightning that manifests from the heavens above. Targets that fail their Spell Save suffer 8DD lightning damage. This spell can only target combatants who are outside.",
+"Elemental Shield": "RANGE: 40\nDURATION: Encounter\nAllies within range gain resistance to flaming, frost, and lightning damage.",
+"Earthblood": "RANGE: 40\nDURATION: Encounter\nOne ally within range gains +3 Grit Points. These bonus Grit Points are lost upon the miracle's conclusion.",
+"Life Blossom": "RANGE: 40\nAllies within range regain 1d3+1 lost Grit Points.",
+"Fey Protection": "RANGE: 40\nDURATION: Encounter\nAllies within range gain resistance to magic damage.",
+"Frosthand": "RANGE: Touch\nSPELL SAVE: DV4 Athletics\nA target within range must pass a Spell Save or suffer 6DD frost damage that ignores armor.",
+"Mould Earth": "RANGE: 200\nYou can shape the earth within the miracle's range, allowing you to create safe or treacherous surfaces. You can raise or lower the elevation of a targeted area up to 40 ft.",
+"Pack Stride": "RANGE: 20\nDURATION: 1 day\nYou and allies within range may move an additional 10 ft each turn.",
+"Primal Transformation": "RANGE: Self\nDURATION: 1 day\nYou can speak with animals for the miracle's duration. As an auxiliary action, you can alter your body to form talons, horns, or fangs. These natural weapons deal magic damage. You can resume your normal form as an auxiliary action.",
+"Shape Water": "RANGE: 200\nDURATION: 1 minute\nYou can reshape water within the miracle's range, allowing you to raise or lower the water's elevation up to 40 ft.",
+"Swarm of Insects": "RANGE: 100 (Small AoE)\nSPELL SAVE: DV4 Resilience\nTargets must pass a Spell Save or suffer 4DD poison damage that ignores armor.",
+"Thorn Cloak": "RANGE: 20\nDURATION: 1 day\nEach time an enemy combatant performs a melee attack at you or an ally within range, they suffer 2DD that ignores armor."
+
+  },
+  "Profane Miracles": {
+
+"Apocalypse": "DIFFICULTY VALUE: 8 (Ritual)\nDURATION: 1 day\nRANGE: 1 mile\nSPELL SAVE: DV5 Fortune\nEnemies within range must pass a Spell Save or incur a -1 penalty to armor and defense rolls. Affected targets are also Demoralized.",
+"Baleful Gaze": "DURATION: 1 turn\nRANGE: 20\nSPELL SAVE: DV4 Discipline\nA target within range must pass a Spell Save or become Stunned.",
+"Blight": "RANGE: 20\nSPELL SAVE: DV4 Resilience\nA target within range must pass a Spell Save or become Diseased.",
+"Conqueror's Mantle": "DURATION: 1 day\nRANGE: 100\nEnemies within range are Demoralized and incur a -1 penalty to Spell Saves.",
+"Death Aura": "DURATION: Encounter\nRANGE: 20\nEnemies within range cannot recover lost Grit Points. Damage rolls made against enemies within range gain a +1 bonus.",
+"Defile": "DIFFICULTY VALUE: 2 (Ritual)\nRANGE: Touch\nYou desecrate a building, ending the sanctuary miracle cast upon it.",
+"Doom": "DURATION: Encounter\nRANGE: 40\nSPELL SAVE: DV4 Fortune\nThe target must pass a Spell Save or incur a -2 penalty to armor and defense rolls.",
+"Dread Veil": "RANGE: 100\nSPELL SAVE: DV4 Discipline\nEnemies within range must pass a Spell Save or become Frightened.",
+"Famine": "DIFFICULTY VALUE: 4 (Ritual)\nRANGE: 1 mile\nCrops and livestock will wither and die from disease within 1 week.",
+"Fellblade": "DURATION: Encounter\nRANGE: Touch\nA weapon you touch imposes a -2 penalty to armor rolls.",
+"Fog of War": "DIFFICULTY VALUE: 3 (Ritual)\nDURATION: 1 day\nRANGE: 1 mile\nYou create magical fog that appears within range. This fog can be shaped however you please and you can move the fog 1 mile per hour in a direction of your choice. Enemy combatants cannot see more than 10 ft through the fog.",
+"Harvest Life": "RANGE: 20\nA target within range suffers 4DD that ignores armor. For every Grit Point the target loses, you or an ally within range regains a lost Grit Point.",
+"Inflict Agony": "DURATION: 1d3 rounds\nRANGE: 20\nSPELL SAVE: DV4 Resilience\nA target within range must make a Spell Save. If the target fails, they suffer 2DD that ignores armor and become Enfeebled for the miracle's duration.",
+"Profane Glyph": "DURATION: 1 day\nRANGE: 20\nSPELL SAVE: DV4 Acrobatics\nYou inscribe a magical glyph upon a surface within a 5 ft x 5 ft area. The glyph will produce an explosion of vile energy when an enemy combatant moves within 5 ft of it. Alternatively, you can choose to trigger the glyph while within 500 ft of it as an action. Combatants within range of an exploding glyph must make a Spell Save. Targets that fail their Spell Save suffer 8DD that is rolled on red dice.",
+"Pestilence": "DURATION: Encounter\nRANGE: 100\nEnemy combatants within range incur a -3 penalty to Resilience checks.",
+"Reaper's Blessing": "DURATION: 1 day\nRANGE: 20\nAllies regain 1 lost Grit Point each time they damage a combatant while within range of this miracle.",
+"Siege Breaker": "RANGE: 1 mile\nYou target a structure in range and reduce its Durability by 50.",
+"Sermon of Suffering": "RANGE: 20\nSPELL SAVE: DV3 Fortune\nEnemies within range must pass a Spell Save or suffer 6DD that ignores armor.",
+"War Lust": "DURATION: Encounter\nRANGE: 20\nAn ally within range becomes Inspired while gaining a +2 bonus to attack and damage rolls.",
+"Wrathful Word": "DURATION: Encounter\nRANGE: 60\nYou and allies within range gain a +1 bonus to attack and damage rolls."
+
+  },
+  "Sanctified Miracles": {
+
+"Banishment": "RANGE: 100\nSPELL SAVE: DV5 Fortune\nA demon within range must pass a Spell Save or be destroyed.",
+"Courage": "RANGE: 60\nDURATION: 1 day\nYou and allies within range cannot become Frightened.",
+"Crusader’s Shield": "RANGE: 60\nDURATION: Encounter\nYou and allies within range gain a +2 bonus to Spell Saves for the miracle’s duration.",
+"Discernment": "DURATION: 1 day\nRANGE: 500\nYou can sense the presence of demons, fey, and undead within range. The intensity of this sensation increases the nearer you are to these creatures. You also know the true nature of things and cannot be deceived by illusions.",
+"Divination": "DIFFICULTY VALUE: 4 (Ritual)\nYour patron shows you a vision pertaining to secret knowledge you seek. The higher your SV, the clearer the vision is.",
+"Divine Aid": "DURATION: 1 day\nRANGE: 50\nA target within range gains +3 Luck Points. These Luck Points are lost upon the miracle's conclusion.",
+"Holy Ward": "DURATION: Encounter\nRANGE: 20\nAllies within range ignore the first successful attack performed against them. You may only perform this miracle once per encounter.",
+"Humble the Mighty": "DURATION: Encounter\nRANGE: 100\nSPELL SAVE: DV4 Fortune\nThe target must pass a Spell Save or incur a -2 penalty to attack and damage rolls.",
+"Lay on Hands": "RANGE: Touch\nIf your Magic check is a success, you restore 1 GP to your target for every success rolled. Your target is also cured of any debilitating conditions affecting them, such as being Dazed or Poisoned.",
+"Purifying Light": "RANGE: 20\nDemons and undead within range of this miracle suffer 5DD. This holy damage is rolled on black dice and ignores armor.",
+"Rebuke the Witch": "RANGE: 100\nYou may perform this miracle when an enemy combatant within range attempts to cast a spell. If your Magic check is a success, the target’s spell fails. You may also use this miracle to end a hostile spell or curse that is currently active.",
+"Restoration": "DIFFICULTY VALUE: 6 (Ritual)\nA target you touch is cured of any injuries affecting them.",
+"Righteous Armor": "DURATION: Encounter\nRANGE: 60\nYou and allies within range gain a +1 bonus to armor and defense rolls.",
+"Sacred Preservation": "DURATION: Encounter\nRANGE: 20\nOne target within range becomes immune to all forms of damage except for holy. If the target of this miracle performs a hostile action, the miracle immediately ends.",
+"Saint’s Blade": "DURATION: 1 day\nRANGE: Touch\nA weapon you touch deals holy damage for the miracle’s duration. This weapon also grants a +1 bonus to attack rolls made against demons, fey, undead, and wyrms.",
+"Sanctuary": "DIFFICULTY VALUE: 2 (Ritual)\nRANGE: Touch\nYou consecrate a building. Demons, fey, and undead cannot enter this consecrated site. Characters resting within this structure gain +1 Grit Point when naturally healing. You gain a +1 bonus to Magic checks performed in a sanctuary.",
+"Scorn the Heretic": "DURATION: Encounter\nRANGE: 100\nEnemy combatants within range incur a -1 penalty to attack and damage rolls.",
+"Turn Abomination": "DURATION: 1d3 rounds\nRANGE: 60\nSPELL SAVE: DV3 Discipline\nDemons, fey, and undead within range of this miracle must make a Spell Save. Targets failing this Spell Save must flee from your presence for the miracle's duration. Combatants that fail this Spell Save and roll a 1 are destroyed.",
+"Word of Castigation": "DURATION: 1 turn\nRANGE: 20\nSPELL SAVE: DV3 Fortune\nEnemies within range must pass a Spell Save or become Restrained for the miracle’s duration. Demons and undead that fail their Spell Save also fall prone."
+
+  }
+};
+
+const TRAIT_DATA = {
+  "Generic": {
+  
+	"Artisan": "You perform Brewing, Carpentry, Masonry, and Smithing checks on red dice.",
+	"Armor Training": "You gain proficiency with all forms of armor.",
+	"Battle Adept": "You roll red dice for melee attacks.",
+	"Bulging Thews": "You perform Athletics checks and melee damage rolls on red dice. You gain a +1 bonus to damage rolls while wielding brutal weapons.",
+	"Combat Medic": "You roll red dice for Heal checks. When you successfully perform first aid, you restore 1d3 + 1 Grit Points.",
+	"Contact Shot": "Your ranged attacks do not incur Opportunity Attacks.",
+	"Devilish Beguilement": "You perform Diplomacy checks on red dice. As an action, you may distract an enemy combatant within 5 ft and cause them to become Confused until the beginning of your next turn.",
+	"Executioner": "You gain a +1 bonus to damage rolls while wielding a two-handed or versatile melee weapon. Once per encounter, you may roll black damage dice for an attack made with a two-handed or versatile weapon.",
+	"Fast Hands": "You perform Dexterity checks on red dice. You may use an item, interact with an object, or make a skill check during a combat encounter as an auxiliary action.",
+	"Good Luck Charm": "You gain +1 Luck Point. When an ally makes a skill check, you may spend one of your Luck Points to add two dice to their roll.",
+	"Hammerer": "Grudge mauls and warhammers you wield gain the stunning trait. While wielding a hammer, you do not suffer from its clumsy trait.",
+	"Hewing Blows": "When you kill a combatant with a two-handed or versatile melee weapon, you may perform another attack against a combatant within reach. You may use this trait once per round.",
+	"Hunter": "You roll red dice for Perception, Stealth, and Tracking checks. You also roll red dice for ranged damage rolls.",
+	"Knightly Combat": "Your melee attacks impose a -1 penalty to enemy armor rolls. While wielding a two-handed or versatile melee weapon, your attacks impose a -2 penalty to armor rolls.",
+	"Lightning Reflexes": "You perform Acrobatics checks and ranged defense rolls on red dice.",
+	"Lucky": "You roll red dice for Fortune checks. At the beginning of each encounter, you gain 1 Luck Point. This extra Luck Point is lost at the end of the encounter if not used.",
+	"Mobile Marksman": "Moving before performing a ranged attack no longer imposes a penalty to your attack rolls. Your movement is not limited to 5 ft when you Reload a weapon. You may not benefit from this special trait while mounted.",
+	"Offhand Strike": "While wielding two weapons, your melee attacks gain a +2 bonus to damage rolls. This bonus damage is always rolled on white dice.",
+	"Quick Draw": "You do not incur a penalty for drawing and attacking with a weapon in the same turn. Furthermore, you gain a +2 bonus to attack rolls made in the first round of combat.",
+	"Rapid Shot": "You may perform two attacks with a bow each turn, incurring a -2 penalty to both attack rolls. Bows with the reload trait may not fire twice but may be Reloaded as an auxiliary action.",
+	"Resilient": "You perform Resilience checks on red dice. When critically injured, you may roll twice on the critical injury chart and choose between the two results.",
+	"Riposte": "You gain a +1 bonus to melee attack and damage rolls against opponents who missed you with a melee attack on their previous turn.",
+	"Scholar": "You perform Academics checks on red dice. You are able to decipher any written language on a successful DV4 Academics check.",
+	"Sharpshooter": "You roll red dice for ranged attack rolls.",
+	"Shieldwall": "Once per encounter, you may impose a -3 penalty to all attack rolls directed at you for 1 round of combat. You may only benefit from this trait while wielding a shield.",
+	"Tomb Robber": "When you trigger a trap, you make a DV5 Fortune check. On a success, the trap instead fails to function.",
+	"Trick Shooter": "Concealment, cover, and long-range no longer impose penalties to your ranged attacks.",
+	"Veteran": "You roll red dice for Discipline and Leadership checks. Regiments you join gain a +1 bonus to their damage rolls.",
+	"Weapons Training": "You gain proficiency with all forms of weaponry.",
+	"Web of Steel": "You roll red defense dice against melee attacks. While wielding a weapon with the parry trait, you gain a +1 bonus to melee defense rolls.",
+	"Wrestler": "You perform grappling checks on red dice. When you attack a grappled target, you gain a +1 bonus to your damage rolls.",
+	"Wayfarer": "You perform Animal Handling, Folklore, Orientation, Ride, and Survival checks on red dice."
+	
+	},
+  "Berserker": {
+	"Death Dealer": "Once per encounter, you may perform a melee attack as an auxiliary action.",
+	"Ignore Pain": "You may impose a -3 penalty to a damage roll made against you. You can use this trait a number of times per encounter equal to your ranks in Toughness.",
+	"Battle Fury": "Your melee attacks gain a +1 bonus to damage rolls, and you cannot be Frightened.",
+	"Brawler": "Your unarmed attacks are considered natural weapons that possess the brutal trait.",
+	"Crushing Blows": "Your melee attacks gain a +1 bonus to damage rolls and impose a -1 penalty to armor rolls.",
+	"Frenzied Assault": "Upon activating this trait, you gain a +2 bonus to attack rolls and a -1 penalty to defense rolls until the beginning of your next turn.",
+	"Hard to Kill": "When you activate Ignore Pain, the damage roll made against you must be performed on white dice, if they are not white already.",
+	"Juggernaut": "As an auxiliary action, you may end the Dazed, Restrained, and Stunned conditions affecting you. Activating this trait exhausts one use of Ignore Pain.",
+	"Percussive Strikes": "When you hit a combatant with a melee attack, you may force them to move into an unoccupied space within 10 ft. This involuntary movement does not provoke Opportunity Attacks.",
+	"Tough as Nails": "You gain an additional use of Ignore Pain each encounter.",
+	"Unrivaled Might": "Your melee damage dice explode on a result of 5 or 6. You also gain a +2 bonus to Athletics checks.",
+	"Withering Blows": "When you hit a combatant with a melee attack, your target incurs a -1 penalty to their next attack and damage roll."
+	},
+  "Champion": {
+	"Blademaster": "You roll red attack and damage dice while wielding melee weapons.",
+	"Heroic Action": "You may roll black dice for an attack or defense roll. You may use this trait a number of times per encounter equal to your ranks in Willpower.",
+	"Challenge": "You may target an enemy combatant within 20 ft. Your target incurs a -2 penalty to attack and damage rolls directed against combatants other than you for the remainder of the encounter. This special trait may be used once per encounter and may only be used against targets that can hear and understand you.",
+	"Counter-Strike": "Once per round, you may deal 6DD against an enemy that misses you with a melee attack. This damage ignores armor.",
+	"Deflect Missile": "Once per round, you may impose a -3 penalty to a ranged attack roll made against you.",
+	"Expert Duelist": "Your attack and defense dice explode on a result of 5 or 6.",
+	"Lethal Accuracy": "You may roll black damage dice after performing a successful melee attack. Activating this trait exhausts one use of Heroic Action.",
+	"Lightning Strike": "Combatants you target with Heroic Action attacks may only roll white defense dice.",
+	"Peerless Warrior": "You gain a +1 bonus to melee attack and defense rolls.",
+	"Springing Step": "You may move an additional 10 ft during your turn. You also roll red dice for Acrobatics checks.",
+	"Weapon Master": "You gain an additional use of Heroic Action each encounter.",
+	"Uncanny Evasion": "When you use Heroic Action for a defense roll, you convert the dice of the attack roll made against you to white, if they are not white already."
+	},
+  "Delver": {
+	"Cunning Strike": "You gain a +2 bonus to damage rolls against targets within 5 ft of your allies.",
+	"Lucky Break": "After you perform a defense roll or fail a skill check, you may reroll the entire dice pool on black dice. You may use this trait a number of times per day equal to your ranks in Fate.",
+	"Charmed Life": "You gain 2 additional uses of Lucky Break each day.",
+	"Crippling Attacks": "When you damage a combatant with your Cunning Strike, the target incurs a -1 penalty to attack and defense rolls until the beginning of your next turn.",
+	"Cavern Crawler": "You may climb up to 25 ft each turn without having to make an Athletics check. You may also fall up to 50 ft without taking damage.",
+	"Deadly Guile": "Your Cunning Strike imposes a -2 penalty to the target's armor roll.",
+	"Nimble Fingers": "When you perform a Dexterity check, your dice explode on a result of 5 or 6. You may also Reload a ranged weapon as an auxiliary action.",
+	"Quick Escape": "You may Run as an auxiliary action.",
+	"Shadow Step": "You gain a +1 bonus to Stealth checks. Once per encounter, you may move into a space obscured by darkness and become Invisible until the beginning of your next turn.",
+	"Slippery Defense": "When you successfully defend against a melee attack, you may immediately move up to 10 ft without provoking Opportunity Attacks.",
+	"Trap Sense": "You may perform a DV4 Fortune check. On a success, you can sense the presence of traps within 100 ft.",
+	"Treasure Hunter": "You gain a +1 bonus to Dexterity and Fortune checks.",
+	"Uncanny Acrobat": "You gain a +1 bonus to Acrobatics checks, and you may not be targeted by Opportunity Attacks."
+	},
+  "Knight": {
+	"Chivalrous": "You roll red dice for melee attacks and Spell Saves. If you perform an ambush or ranged attack, you may not benefit from this trait for the remainder of the encounter.",
+	"Focused Strike": "You may impose a -2 penalty to your target’s armor roll after a successful melee attack. You may use this trait a number of times per encounter equal to your ranks in Willpower.",
+	"Beacon of Virtue": "You and allies within 40 ft of you gain a +1 bonus to Discipline checks and Spell Saves.",
+	"Devastating Charge": "On a turn you charge, you may roll black attack dice. When you damage a combatant on a turn you charge, the target remains Dazed until the beginning of your next turn.",
+	"Dragon Slayer": "When activating Focused Strike, your attack ignores the armor of large and huge targets.",
+	"Flower of Chivalry": "You gain an additional use of Focused Strike each encounter.",
+	"Giant Foe": "Large and huge combatants incur a -2 penalty to attack rolls they make against you.",
+	"Oathsworn Defender": "Once per round, you may impose a -2 penalty to an attack roll made against an ally within 5 ft of you.",
+	"Second Skin": "Armor imposes no more than a -1 penalty to your Acrobatics checks and defense rolls.",
+	"Shield of Faith": "You may ignore one successful hit made against you each encounter.",
+	"Paladin": "You can learn and perform miracles, though you are restricted to a single divine tradition.",
+	"Templar": "You gain a +1 bonus to melee attack rolls and Spell Saves.",
+	"Valiant Blow": "When activating Focused Strike, you gain a bonus to the damage roll equal to your ranks in Willpower.",
+	"Word of Honor": "You gain a +3 bonus to Diplomacy checks. You may not benefit from this special trait while lying."
+    },
+  "Mage": {
+	"Magic Bolt": "As an action, you may make a magic ranged attack against a target within 100 ft. This attack is resolved using your Magic skill rather than your Shooting skill. The Magic Bolt has a base damage of 2 and imposes a -1 penalty to armor rolls.",
+	"Spellcaster": "You can learn and cast spells. You begin with 8 spells of your choice.",
+	"Arcane Focus": "When you perform a Magic check, you may reroll one die. Your Stress Threshold is also increased by 2.",
+	"Charged Blast": "Your Magic Bolt gains a +2 bonus to its damage rolls.",
+	"Deadly Spells": "When casting spells, your damage dice explode on a result of 5 or 6.",
+	"Esoteric Scholar": "You roll black dice for Academics and Folklore checks. You also gain a +1 bonus to Magic checks.",
+	"Fortune Teller": "You gain +1 Luck Point and a +1 bonus to Fortune checks.",
+	"Lore Master": "Choose one sorcerous tradition. You roll red dice for Magic checks when casting spells from this tradition.",
+	"Magic Wand": "You roll red attack and damage dice with your Magic Bolt.",
+	"Mystic Restoration": "Once per day, you may spend an hour studying your grimoire and remove all Arcane Stress.",
+	"Overchannel Magic": "When casting a spell, you may incur 2 points of Arcane Stress and perform the Magic check on black dice.",
+	"Overwhelming Power": "Targets of your spells incur a -1 penalty to their Spell Saves.",
+	"Piercing Energy": "Your Magic Bolt imposes a -3 penalty to armor rolls, rather than -1.",
+	"Quick Spell": "You may cast DV1 spells as an auxiliary action. You may cast another spell as an action during the same turn you cast a quick spell.",
+	"Spell Mastery": "You gain a +1 bonus to Magic checks and increase your Stress Threshold by 1. You automatically cast DV1 spells without the need to perform a Magic check."
+	},
+  "Priest": {
+	"Anointed": "You can learn and perform miracles. You are restricted to a single divine tradition and begin with 4 miracles of your choice.",
+	"Divine Intervention": "Once per encounter, you may perform a Magic check on black dice.",
+	"Battle Chant": "You may perform miracles as an auxiliary action and no longer incur Opportunity Attacks when making Magic checks.",
+	"Divine Strike": "When you perform a successful melee attack, you may gain a +1 bonus to the damage roll. This attack deals holy damage. You may use Divine Strike a number of times per encounter equal to your ranks in Willpower.",
+	"Fanatic": "You roll red dice for Magic checks and cannot be Frightened.",
+	"Favored Disciple": "You gain a +1 bonus to Magic checks. Once per encounter, you may gain a bonus to a Magic check equal to your ranks in Fate.",
+	"Meditation": "Once per day, you may read from your holy book for one hour and reset your Magic check DV to 1.",
+	"Spiritual Conduit": "You may use the Divine Intervention special trait twice per encounter.",
+	"Voice of the Divine": "As an action, you may force enemy combatants within 40 ft to make a DV3 Discipline check. Targets that fail this Discipline check are Frightened. This special trait may be used once per encounter.",
+	"Warrior Monk": "You gain proficiency with heavy armor and heavy weapons. You also gain a +1 bonus to Discipline checks.",
+	"Witch Hammer": "You gain a +2 bonus to Spell Saves. Once per encounter, you may end an active spell cast by an enemy as an auxiliary action.",
+	"Zealot": "You gain a +1 bonus to Magic checks. Once per encounter, you may roll black dice for a Spell Save."
+	},
+  "Scout": {
+	"Bullseye": "Once per encounter, you may roll black attack and damage dice for a ranged attack.",
+	"Wanderer": "You roll red dice for Orientation, Survival, and Tracking checks.",
+	"Animal Charm": "You roll red dice for Animal Handling checks. Outside of combat, you may make a DV5 Animal Handling check in an attempt to tame a wild animal within 40 ft. On a success, the animal is under your control. You may only tame one animal at a time.",
+	"Camouflage": "You and those within 20 ft of you gain a +2 bonus to Stealth checks while in a rural environment. You also roll black dice for Stealth checks while in rural environments.",
+	"Expert Hunter": "You gain a +1 bonus to ranged attack rolls. You also roll black dice for Tracking checks.",
+	"Explorer": "You roll black dice for Orientation and Survival checks. Once per day, you may reroll an Orientation check.",
+	"Heart-Seeker": "When you hit a combatant while using Bullseye, you gain a +2 bonus to the damage roll.",
+	"Marksman": "Your ranged attacks gain a +1 bonus to damage rolls. Your Bullseye attack imposes a -2 penalty to the target’s armor roll.",
+	"Master Trapper": "Once per encounter, you may force a combatant that moves within 40 ft of you to make a DV4 Acrobatics check. On a failure, the target is Restrained by a hidden trap you have placed. The combatant remains Restrained until the beginning of your next turn.",
+	"Sentry": "At the beginning of each encounter, you may perform a ranged attack before initiative order is determined. You must have a loaded ranged weapon to benefit from this trait.",
+	"Sniper": "You may use the Bullseye special trait twice per encounter.",
+	"Swift Stride": "You may move an additional 10 ft during your turn, and your party gains an additional Movement Point.",
+	"Wild Heart": "You can learn and perform miracles, though you are restricted to Druidic Magic."
+    },
+  "Soldier": {
+	"Coordinated Movement": "As an auxiliary action, you can allow an ally within 40 ft of you to move again this turn. The target of this trait may move up to 20 ft and does not provoke Opportunity Attacks.",
+	"Tactics": "As an auxiliary action, you can issue orders to one ally within 40 ft. Your target gains a +1 bonus to attack and defense rolls until the beginning of your next turn.",
+	"Captain": "When using Coordinated Movement, you may target two allies within 40 ft of you, rather than one.",
+	"Commander": "You gain a +1 bonus to Leadership checks. Regiments in your army may benefit from your Leadership skill if they are within 200 ft of you.",
+	"Hardened": "You gain a +1 bonus to armor rolls and Discipline checks. You roll black dice for Discipline checks.",
+	"Heavy Infantry": "Your armor dice explode on a result of 5 or 6.",
+	"Linebreaker": "Enemy combatants within your reach may not perform Opportunity Attacks.",
+	"Pinning Attack": "When you hit an enemy with a melee attack, you may Restrain them. The target remains Restrained until the beginning of your next turn.",
+	"Shock Trooper": "While wielding a weapon with the sweep trait, you may attack up to 3 enemy combatants as part of your Attack action, rather than 2.",
+	"Skirmisher": "You may attack with a throwing weapon as an auxiliary action. You do not incur a penalty for moving and attacking with a throwing weapon in the same turn.",
+	"Tactician": "Targets of your Tactics trait receive a +2 bonus to attack and defense rolls, rather than +1.",
+	"Vanguard": "You never incur a penalty for making multiple defense rolls in a single turn of combat."
+	},
+  "Spellblade": {
+	"Eldritch Barrier": "You may gain a +2 bonus to a defense roll. You may use this trait a number of times per encounter equal to your ranks in Intelligence. This defense bonus is increased to 3 if the attacker is demon, fey, or undead.",
+	"Spellcaster": "You can learn and cast spells. You begin with two spells of your choice.",
+	"Arcane Strike": "Once per encounter, you may gain a bonus to a damage roll equal to your ranks in Magic. This attack ignores armor.",
+	"Battle Magic": "You may perform Magic checks while threatened by enemy combatants without provoking Opportunity Attacks. After damaging a combatant with a melee weapon, you may roll red dice for your next Magic check.",
+	"Death Palm": "As an auxiliary action, you may force a target within 5 ft to make a DV4 Resilience check. On a failure, the target receives 10DD magic damage that ignores armor. You may use this trait once per encounter.",
+	"Disorienting Flash": "When activating Eldritch Barrier, all enemies within 5 ft are Dazed until the beginning of your next turn.",
+	"Monster Slayer": "You roll black damage dice against large and huge targets.",
+	"Spectral Sight": "You can see Invisible creatures.",
+	"Spell Shield": "You may roll a Spell Save on black dice. Activating this trait exhausts one use of your Eldritch Barrier.",
+	"Spellbound Weapon": "As an action, you may create a magic bond with a weapon you can touch. While wielding this weapon, you deal magic damage. As an auxiliary action, you can summon your spellbound weapon, materializing it within your grasp. The spellbound weapon must be within 200 ft for you to summon it.",
+	"Spiteful Ward": "When activating Eldritch Barrier, all enemies within 5 ft receive 4DD that ignores armor.",
+	"Warrior Wizard": "You gain proficiency with medium armor and do not incur a penalty to Magic checks while wearing medium armor. If you cast a spell that deals damage, you gain a +1 bonus to the damage roll."
+    },
+  "Troubadour": {
+	"Inspire Greatness": "You begin each encounter with a number of bonus Luck Points equal to your ranks in Willpower. You cannot use these Luck Points; however, you can distribute them to allies during the encounter. These bonus Luck Points are lost upon the encounter's conclusion if they are not used.",
+	"Mirthful Mockery": "As an auxiliary action, you can taunt an enemy combatant within 40 ft. The target of this mockery incurs a -1 penalty to attack rolls until the beginning of your next turn.",
+	"Bardic Lore": "You can learn and perform spells, though you are restricted to a single sorcerous tradition.",
+	"Biting Wit": "Your Mirthful Mockery trait also imposes a -1 penalty to the target's defense rolls.",
+	"Discordant Dirge": "As an action, you may force enemies within 40 ft to become Confused for 1 turn. You may use this trait a number of times per encounter equal to your ranks in Willpower.",
+	"Harlequin": "You gain a +1 bonus to Acrobatics checks and defense rolls.",
+	"Healing Hymn": "As an action, you restore 1d3 Grit Points to a combatant within 40 ft. You may use this trait a number of times per day equal to your ranks in Willpower.",
+	"Marching Cadence": "Your party is Inspired and gains an additional Movement Point.",
+	"Mesmerizing Melody": "As an action, you may force an enemy within 40 ft to make a DV3 Discipline check. On a failure, your target becomes Dazed for 1 turn. If the target suffers any damage, they are no longer Dazed.",
+	"Muse": "Inspire Greatness generates 2 more bonus Luck Points.",
+	"Silver Tongue": "You roll black dice for Diplomacy checks.",
+	"Song of Celerity": "You and your party may move an additional 5 ft during your turn.",
+	"Warding Chant": "As an auxiliary action, you may grant allies within 40 ft a +2 bonus to Spell Saves until the beginning of your next turn.",
+	"War Anthem": "Regiments within 100 ft may move an additional 20 ft each turn and gain a +1 bonus to damage rolls."
+    }
+};
+
+/* ============================================================
+   MAGIC & MIRACLES – LOGICA COMPLETA
+============================================================ */
+
+function populateMagicNames(schoolSelect, nameSelect, detailBox) {
+  const school = schoolSelect.value;
+  nameSelect.innerHTML = `<option value=""></option>`;
+
+  if (!MAGIC_DATA[school]) return;
+
+  Object.keys(MAGIC_DATA[school]).forEach(spellName => {
+    const opt = document.createElement("option");
+    opt.value = spellName;
+    opt.textContent = spellName;
+    nameSelect.appendChild(opt);
+  });
+
+  // Reset detail quando si cambia scuola
+  detailBox.value = "";
+}
+
+function updateMagicDetail(schoolSelect, nameSelect, detailBox) {
+  const school = schoolSelect.value;
+  const name = nameSelect.value;
+
+  if (MAGIC_DATA[school] && MAGIC_DATA[school][name]) {
+    detailBox.value = MAGIC_DATA[school][name];
+	autoSizeTextarea(detailBox);
+  } else {
+    detailBox.value = "";
+  }
+}
+
+function createMagicRow(data = {}) {
+  const row = document.createElement("div");
+  // riuso il layout dei trait per avere la stessa griglia
+  row.className = "trait-row magic-row";
+
+  /* ---------- SCUOLA ---------- */
+  const schoolSelect = document.createElement("select");
+  schoolSelect.className = "info-select magic-school";
+  schoolSelect.innerHTML = `
+    <option value=""></option>
+    <option value="Elemental Magic">Elemental Magic</option>
+    <option value="Illusionist Magic">Illusionist Magic</option>
+    <option value="Imperial Magic">Imperial Magic</option>
+    <option value="Infernal Magic">Infernal Magic</option>
+    <option value="Runic Magic">Runic Magic</option>
+    <option value="Stygian Magic">Stygian Magic</option>
+    <option value="Druidic Miracles">Druidic Miracles</option>
+    <option value="Profane Miracles">Profane Miracles</option>
+    <option value="Sanctified Miracles">Sanctified Miracles</option>
+  `;
+  schoolSelect.value = data.school || "";
+
+  /* ---------- NOME MAGIA / MIRACOLO ---------- */
+  const nameSelect = document.createElement("select");
+  nameSelect.className = "info-select magic-name";
+  nameSelect.innerHTML = `
+    <option value=""></option>
+  `;
+  nameSelect.value = data.name || "";
+
+  /* ---------- DESCRIZIONE DETTAGLIATA ---------- */
+  const detailBox = document.createElement("textarea");
+  detailBox.className = "magic-detail read-only-area autosize-detail";
+  detailBox.rows = 3;
+  detailBox.value = data.detail || "";
+  detailBox.readOnly = true;
+
+
+  /* ---------- REMOVE BUTTON ---------- */
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "trait-remove-btn";
+  removeBtn.textContent = "X";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    saveToLocal();
+  });
+
+  /* ---------- EVENTI DINAMICI ---------- */
+  schoolSelect.addEventListener("change", () => {
+    populateMagicNames(schoolSelect, nameSelect, detailBox);
+    saveToLocal();
+  });
+
+  nameSelect.addEventListener("change", () => {
+    updateMagicDetail(schoolSelect, nameSelect, detailBox);
+    saveToLocal();
+  });
+
+  detailBox.addEventListener("input", () => {
+    saveToLocal();
+  });
+
+  /* ---------- RIPRISTINO DATI SALVATI ---------- */
+  if (data.school) populateMagicNames(schoolSelect, nameSelect, detailBox);
+  if (data.name) {
+    nameSelect.value = data.name;
+    updateMagicDetail(schoolSelect, nameSelect, detailBox);
+	autoSizeTextarea(detailBox);
+  }
+
+  /* ---------- ASSEMBLA LA RIGA ---------- */
+  row.appendChild(schoolSelect);
+  row.appendChild(nameSelect);
+  row.appendChild(detailBox);
+  row.appendChild(removeBtn);
+
+  return row;
+}
+
+/* ============================================================
+   SPECIAL TRAITS – LOGICA COMPLETA FASE 2
+============================================================ */
+
+function populateTraitNames(typeSelect, nameSelect, detailBox) {
+  const type = typeSelect.value;
+  nameSelect.innerHTML = `<option value=""></option>`;
+
+  if (!TRAIT_DATA[type]) return;
+
+  Object.keys(TRAIT_DATA[type]).forEach(traitName => {
+    const opt = document.createElement("option");
+    opt.value = traitName;
+    opt.textContent = traitName;
+    nameSelect.appendChild(opt);
+  });
+
+  // Reset detail when changing type
+  detailBox.value = "";
+}
+
+function updateTraitDetail(typeSelect, nameSelect, detailBox) {
+  const type = typeSelect.value;
+  const name = nameSelect.value;
+
+  if (TRAIT_DATA[type] && TRAIT_DATA[type][name]) {
+    detailBox.value = TRAIT_DATA[type][name];
+	autoSizeTextarea(detailBox);
+  } else {
+    detailBox.value = "";
+  }
+}
+
+/* ============================================================
+   RIGA TRAIT – VERSIONE FINALE (FASE 2)
+============================================================ */
+function createTraitRow(data = {}) {
+  const row = document.createElement("div");
+  row.className = "trait-row";
+
+  /* ---------- TIPO (classe o generico) ---------- */
+  const typeSelect = document.createElement("select");
+  typeSelect.className = "info-select trait-type";
+  typeSelect.innerHTML = `
+    <option value=""></option>
+    <option value="Generic">Generic</option>
+    <option value="Berserker">Berserker</option>
+    <option value="Champion">Champion</option>
+    <option value="Delver">Delver</option>
+    <option value="Knight">Knight</option>
+    <option value="Mage">Mage</option>
+    <option value="Priest">Priest</option>
+    <option value="Scout">Scout</option>
+    <option value="Soldier">Soldier</option>
+    <option value="Spellblade">Spellblade</option>
+    <option value="Troubadour">Troubadour</option>
+  `;
+  typeSelect.value = data.type || "";
+
+  /* ---------- NOME TRAIT (dipende da Tipo) ---------- */
+  const nameSelect = document.createElement("select");
+  nameSelect.className = "info-select trait-name";
+  nameSelect.innerHTML = `
+    <option value=""></option>
+  `;
+  nameSelect.value = data.name || "";
+
+  /* ---------- DETTAGLIO TRAIT ---------- */
+  const detailBox = document.createElement("textarea");
+  detailBox.className = "trait-detail read-only-area autosize-detail";
+  detailBox.rows = 3;
+  detailBox.value = data.detail || "";
+  detailBox.readOnly = true;
+
+  /* ---------- REMOVE BUTTON ---------- */
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "trait-remove-btn";
+  removeBtn.textContent = "X";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+	saveToLocal();
+  });
+
+  /* ---------- EVENTI DINAMICI ---------- */
+typeSelect.addEventListener("change", () => {
+    populateTraitNames(typeSelect, nameSelect, detailBox);
+    saveToLocal();
+});
+
+nameSelect.addEventListener("change", () => {
+    updateTraitDetail(typeSelect, nameSelect, detailBox);
+    saveToLocal();
+});
+
+detailBox.addEventListener("input", () => {
+    saveToLocal();
+});
+
+  /* ---------- RIPRISTINO DATI SALVATI (futuro: fase 3) ---------- */
+  if (data.type) populateTraitNames(typeSelect, nameSelect, detailBox);
+  if (data.name) {
+    nameSelect.value = data.name;
+    updateTraitDetail(typeSelect, nameSelect, detailBox);
+	autoSizeTextarea(detailBox);
+  }
+
+  /* ---------- ASSEMBLA LA RIGA ---------- */
+  row.appendChild(typeSelect);
+  row.appendChild(nameSelect);
+  row.appendChild(detailBox);
+  row.appendChild(removeBtn);
+
+  return row;
+}
+
+document.getElementById("addMagicBtn").addEventListener("click", () => {
+  const row = createMagicRow();
+  document.getElementById("magicMiraclesContainer").appendChild(row);
+  saveToLocal();
+});
+
+document.getElementById("addTraitBtn").addEventListener("click", () => {
+  const row = createTraitRow();
+  document.getElementById("traitsContainer").appendChild(row);
+  saveToLocal();
+});
+
+function autoSizeTextarea(el) {
+    el.style.height = "auto";
+    const extra = el.offsetHeight - el.clientHeight; // padding + border
+    el.style.height = (el.scrollHeight + extra) + "px";
+}
+
+</script>
+
+</body>
+</html>
