@@ -473,6 +473,14 @@ table td {
   margin-bottom: 10px;
 }
 
+.magic-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
 .trait-remove-btn {
   background: #b85a4a;
   color: white;
@@ -1097,6 +1105,8 @@ if (data.magicMiracles && Array.isArray(data.magicMiracles)) {
     div.innerHTML = `<input class="item-slot-input" data-index="${idx}" value="${item}">`;
     slotsDiv.appendChild(div);
   });
+  
+  autosizeAllTextareas();
 }
 
 
@@ -1160,15 +1170,15 @@ nameCell.addEventListener("mouseenter", ev => {
     if (!tip) return;
     const box = id("skillTooltip");
     box.innerHTML = tip;
-    box.style.left = ev.pageX + 20 + "px";
-    box.style.top = ev.pageY + 20 + "px";
+    box.style.left = ev.pageX + 4 + "px";
+    box.style.top = ev.pageY + 4 + "px";
     box.style.display = "block";
 });
 
 nameCell.addEventListener("mousemove", ev => {
     const box = id("skillTooltip");
-    box.style.left = ev.pageX + 20 + "px";
-    box.style.top = ev.pageY + 20 + "px";
+    box.style.left = ev.pageX + 4 + "px";
+    box.style.top = ev.pageY + 4 + "px";
 });
 
 nameCell.addEventListener("mouseleave", () => {
@@ -1891,8 +1901,8 @@ document.querySelectorAll(".info-select").forEach(select => {
     if (tip) {
       const box = id("skillTooltip");
       box.innerHTML = tip;
-      box.style.left = e.pageX + 20 + "px";
-      box.style.top = e.pageY + 20 + "px";
+      box.style.left = e.pageX + 4 + "px";
+      box.style.top = e.pageY + 4 + "px";
       box.style.display = "block";
     } else {
       id("skillTooltip").style.display = "none";
@@ -2393,7 +2403,7 @@ function updateMagicDetail(schoolSelect, nameSelect, detailBox) {
 function createMagicRow(data = {}) {
   const row = document.createElement("div");
   // riuso il layout dei trait per avere la stessa griglia
-  row.className = "trait-row magic-row";
+  row.className = "magic-row";
 
   /* ---------- SCUOLA ---------- */
   const schoolSelect = document.createElement("select");
@@ -2600,6 +2610,15 @@ function autoSizeTextarea(el) {
     el.style.height = "auto";
     const extra = el.offsetHeight - el.clientHeight; // padding + border
     el.style.height = (el.scrollHeight + extra) + "px";
+}
+
+function autosizeAllTextareas() {
+  document.querySelectorAll(
+    ".trait-detail, .magic-detail"
+  ).forEach(ta => {
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + "px";
+  });
 }
 
 </script>
