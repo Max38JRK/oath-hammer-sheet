@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <title>Oath Hammer – Character Sheet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -533,6 +534,7 @@ table td {
   <button type="button" id="btnCharacters">Characters</button>
   <input type="file" id="jsonLoader" accept=".json">
   <button type="button" id="btnExport">Export JSON</button>
+  <button onclick="saveCharacterOnline()">Save Online</button>
   <button type="button" id="btnClearLocal">Clear Local Data</button>
   <button type="button" id="btnToggleAll">Close All</button>
 </div>
@@ -978,6 +980,18 @@ const FIELD_TOOLTIPS = {
   }
 };
 
+/************************************************
+   SUPABASE SAVE
+*************************************************/
+
+const SUPABASE_URL = "https://xoojafpejxaweswcnhmj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhvb2phZnBlanhhd2Vzd2NuaG1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNDI1MzcsImV4cCI6MjA4MTkxODUzN30.gBzqtpA9_vYyo-To9b6iaNt_w30nf4rbtjVDVn1mcgw";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
 
 /************************************************
    JSON LOADING
@@ -1398,12 +1412,22 @@ function getSlotKey(id) {
 
 function getSlotsMeta() {
   try {
-    return JSON.parse(localStorage.getItem("oathhammer_slots") || "[]");
+    const slots = JSON.parse(localStorage.getItem("oathhammer_slots") || "[]");
+
+    // NORMALIZZA SLOT VECCHI
+    slots.forEach(s => {
+      if (!("idcloud" in s)) {
+        s.idcloud = null;
+      }
+    });
+
+    return slots;
   } catch (e) {
     console.warn("Slots meta parse failed:", e);
     return [];
   }
 }
+
 
 function setSlotsMeta(list) {
   localStorage.setItem("oathhammer_slots", JSON.stringify(list));
@@ -1424,6 +1448,7 @@ function migrateLegacyStorage() {
     const data = JSON.parse(legacy);
     const meta = {
       id,
+      idcloud: null,
       name: data.name || "Unnamed",
       lineage: data.lineage || "?",
       class: data.class || "?",
@@ -1451,9 +1476,13 @@ function saveToLocal() {
   const slots = getSlotsMeta();
   let meta = slots.find(s => s.id === currentSlotId);
   if (!meta) {
-    meta = { id: currentSlotId };
+    meta = { id: currentSlotId, idcloud: null };
     slots.push(meta);
-  }
+}
+  if (!("idcloud" in meta)) {
+    meta.idcloud = null;
+}
+
   meta.name = (document.getElementById("name").value || "Unnamed");
   meta.lineage = (document.getElementById("lineage").value || "?");
   meta.class = (document.getElementById("class").value || "?");
@@ -1469,10 +1498,21 @@ function loadFromLocal(slotId) {
   if (!id) return;
 
   const raw = localStorage.getItem(getSlotKey(id));
-  if (!raw) return;
+  if (!raw || raw === "undefined") return;
+
 
   try {
-    populateSheet(JSON.parse(raw));
+    const data = JSON.parse(raw);
+	populateSheet(data);
+	const slots = getSlotsMeta();
+    const meta = slots.find(s => s.id === id);
+    if (meta) {
+      meta.name = data.name || "Unnamed";
+      meta.lineage = data.lineage || "?";
+      meta.class = data.class || "?";
+      meta.lastModified = new Date().toLocaleString();
+      setSlotsMeta(slots);
+    }
     updateAllSkills();
     colorizeSkills();
   } catch (e) {
@@ -1600,29 +1640,30 @@ function deleteSlot(slotId) {
 }
 
 /* inizializzazione all'avvio */
-function initCharacterSlots() {
+async function initCharacterSlots() {
   migrateLegacyStorage();
 
-  currentSlotId = localStorage.getItem("oathhammer_currentSlot");
   const slots = getSlotsMeta();
 
-  // se slot non esiste più, reset
-  if (!currentSlotId ||
-      !slots.some(s => s.id === currentSlotId) ||
-      !localStorage.getItem(getSlotKey(currentSlotId))) {
-    currentSlotId = null;
-    localStorage.removeItem("oathhammer_currentSlot");
+  if (!slots.length) {
+    // nessun personaggio locale → carica dall'online
+    await loadAllCharactersFromOnline();
+
+    // se anche online era vuoto, apri popup forzato
+    if (!getSlotsMeta().length) {
+      openCharacterModal(true);
+    }
+    return;
   }
 
-  renderCharacterSlots();
-
+  // comportamento normale
+  currentSlotId = localStorage.getItem("oathhammer_currentSlot");
   if (currentSlotId) {
-    // 1) ricarica ultimo slot aperto
     loadFromLocal(currentSlotId);
   } else {
-    // 2) nessuno slot → apri popup per scegliere/creare (regola A)
     openCharacterModal(true);
   }
+  renderCharacterSlots();
 }
 
 /* pulsanti toolbar / popup */
@@ -1636,6 +1677,113 @@ document.getElementById("btnExport")
     a.download = (data.name || "character") + "_oathhammer.json";
     a.click();
   });
+
+async function saveCharacterOnline() {
+  if (!currentSlotId) {
+    alert("No active character slot");
+    return;
+  }
+
+  const slots = getSlotsMeta();
+  const meta = slots.find(s => s.id === currentSlotId);
+
+  if (!meta) {
+    alert("Character slot metadata not found");
+    console.error("Slot meta missing for slot:", currentSlotId, slots);
+    return;
+  }
+
+  // Assicura idcloud persistente
+  if (!meta.idcloud) {
+    meta.idcloud = crypto.randomUUID();
+    setSlotsMeta(slots);
+  }
+
+  if (!currentUserId) {
+    alert("Not authenticated");
+    return;
+  }
+
+  const payload = collectDataFromSheet();
+
+  const { error } = await supabaseClient
+    .from("characters")
+    .upsert({
+      id: meta.idcloud,
+      owner_id: currentUserId,
+      data: payload,
+      updated_at: new Date().toISOString()
+    });
+
+  if (error) {
+    alert("Online save failed");
+    console.error(error);
+    return;
+  }
+
+  alert("Character saved online");
+}
+
+async function loadAllCharactersFromOnline() {
+  const { data, error } = await supabaseClient
+    .from("characters")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to load characters from online:", error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    console.log("No online characters found");
+    return;
+  }
+
+  // reset local slots
+  localStorage.removeItem("oathhammer_slots");
+  localStorage.removeItem("oathhammer_slotCounter");
+
+  const slotsMeta = [];
+  let counter = 0;
+
+   data.forEach(row => {
+  counter++;
+  const slotId = String(counter);
+  
+    // salva data nello slot (colonna corretta)
+  localStorage.setItem(
+  getSlotKey(slotId),
+  JSON.stringify(row.data)
+  );
+
+  slotsMeta.push({
+    id: slotId,
+    idcloud: row.id,
+    name: row.data?.name || "Unnamed",
+    lineage: row.data?.lineage || "?",
+    class: row.data?.class || "?",
+    lastModified: new Date(row.updated_at).toLocaleString()
+  });
+
+    });
+
+  localStorage.setItem("oathhammer_slotCounter", String(counter));
+  setSlotsMeta(slotsMeta);
+
+  // seleziona automaticamente il primo (più recente)
+  currentSlotId = slotsMeta[0]?.id || null;
+  if (currentSlotId) {
+    localStorage.setItem("oathhammer_currentSlot", currentSlotId);
+    loadFromLocal(currentSlotId);
+  }
+  renderCharacterSlots();
+  
+  const overlay = document.getElementById("characterModalOverlay");
+overlay.dataset.forceOpen = "0";
+closeCharacterModal();
+
+}
 
 document.getElementById("btnClearLocal")
   .addEventListener("click", () => {
@@ -1699,8 +1847,40 @@ document.getElementById("characterSlotsList")
   });
 
 /* On page load */
-window.addEventListener("DOMContentLoaded", () => {
-  initCharacterSlots();
+
+let currentUserId = null;
+
+async function ensureLogin() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    const { data, error } = await supabaseClient.auth.signInAnonymously();
+    if (error) {
+      console.error("Supabase login failed", error);
+      return;
+    }
+    currentUserId = data.user.id;
+  } else {
+    currentUserId = session.user.id;
+  }
+}
+
+async function loadLatestOnlineCharacter() {
+  const { data, error } = await supabaseClient
+    .from("characters")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error || !data.length) return;
+
+  loadCharacterFromData(data[0].data);
+}
+
+
+window.addEventListener("DOMContentLoaded", async () => {
+  await ensureLogin();
+  await initCharacterSlots();
 });
 
 // Salvataggio globale su ogni input/textarea/select
