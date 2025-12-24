@@ -3,7 +3,7 @@
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
-<title>Oath Hammer – Character Sheet</title>
+<title>Oath Hammer – MASTER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Google Fonts -->
@@ -507,21 +507,77 @@ table td {
     display: none;
 }
 
-/* ============================================
-            refresh Note dal GM 
-============================================ */
+/* =========================
+   MASTER COLOR THEME – DARK PARCHMENT
+   ========================= */
 
-.section-header-flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+body.master-mode {
+  background: #2a2420;
+  color: #2b1f0e;
 }
 
-#btnRefreshPublicNotes {
-  font-size: 14px;
-  padding: 2px 6px;
-  cursor: pointer;
+/* Container */
+body.master-mode .container {
+  background: #e4dcc8;
+  border-color: #6e1f1f;
 }
+
+/* Titles */
+body.master-mode h1 {
+  color: #6e1f1f;
+  text-shadow: none;
+}
+
+body.master-mode h2,
+body.master-mode .collapsible {
+  color: #4a2a14;
+  border-bottom-color: #6e1f1f;
+}
+
+/* Tables */
+body.master-mode table th {
+  background: #bfae8a;
+  color: #2b1f0e;
+}
+
+body.master-mode table td {
+  background: #f3ecd8;
+  color: #2b1f0e;
+}
+
+/* Inputs */
+body.master-mode input,
+body.master-mode select,
+body.master-mode textarea {
+  background: #fdf8eb;
+  color: #2b1f0e;
+  border-color: #6e1f1f;
+}
+
+/* Read-only areas */
+body.master-mode .read-only-area {
+  background: #efe6cf;
+  color: #2b1f0e;
+}
+
+/* Buttons */
+body.master-mode button {
+  background: #6e1f1f;
+  color: #fdf4dc;
+  border: none;
+}
+
+body.master-mode button:hover {
+  background: #8a2a2a;
+}
+
+/* Skill tooltip */
+body.master-mode #skillTooltip {
+  background: #f3ecd8;
+  color: #2b1f0e;
+  border-color: #6e1f1f;
+}
+
 
 
 </style>
@@ -535,24 +591,60 @@ table td {
       <button type="button" id="characterModalClose" class="modal-close-btn">&times;</button>
     </div>
     <div id="characterSlotsList"></div>
-    <div class="character-modal-footer">
-      <button type="button" id="btnCreateSlot">Create New Slot</button>
-    </div>
   </div>
 </div>
 
 <body>
 
+<div id="masterLoginOverlay" style="
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+">
+  <div style="
+    background: #f3ecd6;
+    padding: 24px;
+    border-radius: 12px;
+    width: 320px;
+    text-align: center;
+    border: 3px solid #6e1f1f;
+  ">
+    <h2>Master Login</h2>
+    <input id="masterEmail" type="email" placeholder="Email" style="width:100%; margin-bottom:10px;">
+    <input id="masterPassword" type="password" placeholder="Password" style="width:100%; margin-bottom:14px;">
+    <button id="btnMasterLogin">Login</button>
+    <p id="masterLoginError" style="color:#8a1c1c; display:none;"></p>
+  </div>
+</div>
+
+
+<div id="gmBadge" style="
+  position: fixed;
+  top: 8px;
+  right: 12px;
+  background: #5b0000;
+  color: #ffd6a0;
+  padding: 4px 10px;
+  font-weight: bold;
+  font-size: 12px;
+  border-radius: 6px;
+  z-index: 9999;
+">
+  GM MODE
+</div>
+
 <div class="container">
 
-<h1>Oath Hammer – Character Sheet</h1>
+<h1>Oath Hammer – MASTER</h1>
 
 <div class="toolbar">
   <button type="button" id="btnCharacters">Characters</button>
-  <input type="file" id="jsonLoader" accept=".json">
   <button type="button" id="btnExport">Export JSON</button>
-  <button onclick="saveCharacterOnline()">Save Online</button>
-  <button type="button" id="btnClearLocal">Clear Local Data</button>
+  <button type="button" id="btnReloadOnline">Reload From Online</button>
   <button type="button" id="btnToggleAll">Close All</button>
 </div>
 
@@ -601,30 +693,39 @@ table td {
 </div>
 
 <!-- =============================== -->
-<!--        NOTES FROM THE GM        -->
+<!--        GM NOTES                 -->
 <!-- =============================== -->
 
 <section class="section">
-<div class="section-header-flex">
-  <h2 class="collapsible" data-section="publicNotes">NOTES FROM THE GM</h2>
-  <button
-    type="button"
-    id="btnRefreshPublicNotes"
-    title="Reload notes from the GM"
-  >
-    ⟳
-  </button>
-</div>
-<div class="section-content" data-section-content="publicNotes">
+  <h2 class="collapsible" data-section="gmNotes">GM NOTES</h2>
+  <div class="section-content gm-editable" data-section-content="gmNotes">
+  <div class="field">
+    <textarea
+      id="gmNotes"
+      rows="6"
+      placeholder="Private notes for the Game Master..."
+      class="autosize-detail"
+    ></textarea>
+  </div>
+  </div>
+</section>
+
+<!-- =============================== -->
+<!--        PUBLIC NOTES             -->
+<!-- =============================== -->
+
+<section class="section">
+  <h2 class="collapsible" data-section="publicNotes">PUBLIC NOTES (VISIBLE TO PLAYER)</h2>
+  <div class="section-content gm-editable" data-section-content="publicNotes">
   <div class="field">
     <textarea
       id="publicNotes"
       rows="4"
-      readonly
+      placeholder="Notes visible to the player..."
       class="autosize-detail"
     ></textarea>
   </div>
-</div>
+  </div>
 </section>
 
 <!-- =============================== -->
@@ -897,9 +998,15 @@ table td {
 
 <script>
 
-const IS_MASTER = false;
-const STORAGE_PREFIX = "oathhammer_player_";
+const IS_MASTER = true;
+const STORAGE_PREFIX = "oathhammer_master_";
 
+let currentUserId = null;
+let isAuthenticated = false;
+
+if (IS_MASTER) {
+  document.body.classList.add("master-mode");
+}
 
 /***********************************************
    GLOBAL CONSTANTS & HELPERS
@@ -1040,7 +1147,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_ANON_KEY,
   {
     auth: {
-      storageKey: "sb-oathhammer-player-auth",
+      storageKey: "sb-oathhammer-master-auth",
       persistSession: true
     }
   }
@@ -1050,8 +1157,6 @@ const supabaseClient = window.supabase.createClient(
 /************************************************
    JSON LOADING
 *************************************************/
-
-document.getElementById("jsonLoader").addEventListener("change", handleJsonLoad);
 
 function id(x) { return document.getElementById(x); }
 
@@ -1517,6 +1622,7 @@ function migrateLegacyStorage() {
 
 /* salvataggio nello slot corrente */
 function saveToLocal() {
+  if (IS_MASTER) return;
   if (!currentSlotId) {
     // nessuno slot selezionato: niente salvataggio
     return;
@@ -1572,9 +1678,19 @@ function loadFromLocal(slotId) {
   } catch (e) {
     console.warn("Local load failed:", e);
   }
-  const publicNotes = localStorage.getItem(`${STORAGE_PREFIX}publicnotes_${slotId}`) || "";
-  const textarea = document.getElementById("publicNotes");
-  if (textarea) textarea.value = publicNotes;
+  if (IS_MASTER) {
+    const notes = localStorage.getItem(`${STORAGE_PREFIX}gmnotes_${slotId}`) || "";
+    const textarea = document.getElementById("gmNotes");
+    if (textarea) textarea.value = notes;
+	const publicNotes = localStorage.getItem(`${STORAGE_PREFIX}publicnotes_${slotId}`) || "";
+    const publicNotesTextarea = document.getElementById("publicNotes");
+    if (publicNotesTextarea) publicNotesTextarea.value = publicNotes;
+
+  }
+
+  if (IS_MASTER) {
+    applyMasterReadOnly();
+  }
   
 }
 
@@ -1620,7 +1736,6 @@ function renderCharacterSlots() {
         </div>
         <div class="slot-actions">
           <button type="button" data-action="load" data-id="${slot.id}">Load</button>
-          <button type="button" data-action="delete" data-id="${slot.id}">Delete</button>
         </div>
       `;
 
@@ -1700,7 +1815,14 @@ function deleteSlot(slotId) {
 /* inizializzazione all'avvio */
 async function initCharacterSlots() {
   migrateLegacyStorage();
-
+  
+  if (IS_MASTER) {
+    await loadAllCharactersFromOnline();
+    renderCharacterSlots();
+    openCharacterModal(true);
+    return;
+  }
+  
   const slots = getSlotsMeta();
 
   if (!slots.length) {
@@ -1737,6 +1859,11 @@ document.getElementById("btnExport")
   });
 
 async function saveCharacterOnline() {
+  if (IS_MASTER) {
+  alert("Save Online is disabled in Master mode.");
+  return;
+  }
+
   if (!currentSlotId) {
     alert("No active character slot");
     return;
@@ -1769,7 +1896,7 @@ async function saveCharacterOnline() {
     .upsert({
       id: meta.idcloud,
       owner_id: currentUserId,
-      data: payload,
+      data: IS_MASTER ? undefined : payload,
       updated_at: new Date().toISOString()
     });
 
@@ -1783,53 +1910,68 @@ async function saveCharacterOnline() {
 }
 
 async function loadAllCharactersFromOnline() {
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  console.log("[MASTER] session user:", sessionData?.session?.user);
   const { data, error } = await supabaseClient
     .from("characters")
     .select("*")
     .order("updated_at", { ascending: false });
 
+  console.log("[MASTER] Loaded rows:", data?.length);
   if (error) {
     console.error("Failed to load characters from online:", error);
     return;
   }
 
+  // ⚠️ IMPORTANTE: gestisci 0 risultati senza bloccare UI
   if (!data || data.length === 0) {
-    console.log("No online characters found");
+    console.warn("[MASTER] No online characters found");
+
+    // pulizia controllata
+    setSlotsMeta([]);
+    renderCharacterSlots();
+
+    const overlay = document.getElementById("characterModalOverlay");
+    overlay.dataset.forceOpen = "0";
+    closeCharacterModal();
     return;
   }
 
-  // reset local slots
+  // reset local slots SOLO ORA (dati validi)
   localStorage.removeItem(STORAGE_PREFIX + "slots");
   localStorage.removeItem(STORAGE_PREFIX + "slotCounter");
 
   const slotsMeta = [];
   let counter = 0;
 
-   data.forEach(row => {
-  counter++;
-  const slotId = String(counter);
-  
-    // salva data nello slot (colonna corretta)
-  localStorage.setItem(
-  getSlotKey(slotId),
-  JSON.stringify(row.data)
-  );
+  data.forEach(row => {
+    counter++;
+    const slotId = String(counter);
 
-  localStorage.setItem(
-    `${STORAGE_PREFIX}publicnotes_${slotId}`,
-    row.public_notes || ""
-  );
+    localStorage.setItem(
+      getSlotKey(slotId),
+      JSON.stringify(row.data)
+    );
+	
+	localStorage.setItem(
+      `${STORAGE_PREFIX}gmnotes_${slotId}`,
+      row.gm_notes || ""
+    );
+    
+	localStorage.setItem(
+      `${STORAGE_PREFIX}publicnotes_${slotId}`,
+      row.public_notes || ""
+    );
 
-  slotsMeta.push({
-    id: slotId,
-    idcloud: row.id,
-    name: row.data?.name || "Unnamed",
-    lineage: row.data?.lineage || "?",
-    class: row.data?.class || "?",
-    lastModified: new Date(row.updated_at).toLocaleString()
-  });
-
+    slotsMeta.push({
+      id: slotId,
+      idcloud: row.id,
+      name: row.data?.name || "Unnamed",
+      lineage: row.data?.lineage || "?",
+      class: row.data?.class || "?",
+      lastModified: new Date(row.updated_at).toLocaleString()
     });
+  });
 
   localStorage.setItem(STORAGE_PREFIX + "slotCounter", String(counter));
   setSlotsMeta(slotsMeta);
@@ -1840,34 +1982,33 @@ async function loadAllCharactersFromOnline() {
     localStorage.setItem(STORAGE_PREFIX + "currentSlot", currentSlotId);
     loadFromLocal(currentSlotId);
   }
-  renderCharacterSlots();
-  
-  const overlay = document.getElementById("characterModalOverlay");
-overlay.dataset.forceOpen = "0";
-closeCharacterModal();
 
+  renderCharacterSlots();
+
+  // chiudi popup forzato
+  const overlay = document.getElementById("characterModalOverlay");
+  overlay.dataset.forceOpen = "0";
+  closeCharacterModal();
 }
 
-document.getElementById("btnClearLocal")
-  .addEventListener("click", () => {
-    if (!confirm("Clear ALL local character slots? This cannot be undone.")) return;
 
-    Object.keys(localStorage)
-      .filter(k => k.startsWith("oathhammer_slot_"))
-      .forEach(k => localStorage.removeItem(k));
+async function reloadFromOnlineMaster() {
+  if (!currentUserId) {
+    alert("Not authenticated");
+    return;
+  }
 
-    localStorage.removeItem(STORAGE_PREFIX + "slots");
-    localStorage.removeItem(STORAGE_PREFIX + "currentSlot");
-    localStorage.removeItem(STORAGE_PREFIX + "slotCounter");
+  console.log("[MASTER] Reloading characters from Supabase");
 
-    currentSlotId = null;
+  // pulizia totale cache locale
+  localStorage.removeItem(STORAGE_PREFIX + "slots");
+  localStorage.removeItem(STORAGE_PREFIX + "slotCounter");
+  localStorage.removeItem(STORAGE_PREFIX + "currentSlot");
 
-    populateSheet({});
-    updateAllSkills();
-    colorizeSkills();
-    renderCharacterSlots();
-    openCharacterModal(true);
-  });
+  await loadAllCharactersFromOnline();
+  renderCharacterSlots();
+  openCharacterModal(true);
+}
 
 document.getElementById("btnCharacters")
   .addEventListener("click", () => {
@@ -1878,11 +2019,6 @@ document.getElementById("btnCharacters")
 document.getElementById("characterModalClose")
   .addEventListener("click", () => {
     closeCharacterModal();
-  });
-
-document.getElementById("btnCreateSlot")
-  .addEventListener("click", () => {
-    createNewSlot();
   });
 
 document.getElementById("characterSlotsList")
@@ -1911,22 +2047,34 @@ document.getElementById("characterSlotsList")
 
 /* On page load */
 
-let currentUserId = null;
-
 async function ensureLogin() {
   const { data: { session } } = await supabaseClient.auth.getSession();
 
+  // Nessuna sessione → mostra login
   if (!session) {
-    const { data, error } = await supabaseClient.auth.signInAnonymously();
-    if (error) {
-      console.error("Supabase login failed", error);
-      return;
-    }
-    currentUserId = data.user.id;
-  } else {
-    currentUserId = session.user.id;
+    document.getElementById("masterLoginOverlay").style.display = "flex";
+    return;
   }
+
+  // Verifica ruolo MASTER dal JWT
+  const role = session.user.app_metadata?.role;
+
+  if (role !== "master") {
+    alert("Access denied: not a master account.");
+    await supabaseClient.auth.signOut();
+    document.getElementById("masterLoginOverlay").style.display = "flex";
+    return;
+  }
+
+  // Login OK
+  currentUserId = session.user.id;
+  document.getElementById("masterLoginOverlay").style.display = "none";
+
+  // Avvia app Master
+  await initCharacterSlots();
+
 }
+
 
 async function loadLatestOnlineCharacter() {
   const { data, error } = await supabaseClient
@@ -1943,7 +2091,6 @@ async function loadLatestOnlineCharacter() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   await ensureLogin();
-  await initCharacterSlots();
 });
 
 // Salvataggio globale su ogni input/textarea/select
@@ -2849,12 +2996,6 @@ document.getElementById("addTraitBtn").addEventListener("click", () => {
   saveToLocal();
 });
 
-const refreshBtn = document.getElementById("btnRefreshPublicNotes");
-if (refreshBtn) {
-  refreshBtn.addEventListener("click", refreshPublicNotesFromOnline);
-}
-
-
 function autoSizeTextarea(el) {
     el.style.height = "auto";
     const extra = el.offsetHeight - el.clientHeight; // padding + border
@@ -2870,36 +3011,115 @@ function autosizeAllTextareas() {
   });
 }
 
-async function refreshPublicNotesFromOnline() {
-  if (!currentSlotId) return;
+document.getElementById("btnReloadOnline").addEventListener("click", async () => {
+    await reloadFromOnlineMaster();
+  });
 
-  const slots = getSlotsMeta();
-  const slot = slots.find(s => s.id === currentSlotId);
-  if (!slot?.idcloud) return;
 
-  const { data, error } = await supabaseClient
-    .from("characters")
-    .select("public_notes")
-    .eq("id", slot.idcloud)
-    .single();
+document.getElementById("btnMasterLogin").addEventListener("click", async () => {
+  const email = document.getElementById("masterEmail").value.trim();
+  const password = document.getElementById("masterPassword").value;
+
+  const errorBox = document.getElementById("masterLoginError");
+  errorBox.style.display = "none";
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if (error) {
-    console.error("Failed to refresh public notes:", error);
+    errorBox.textContent = error.message;
+    errorBox.style.display = "block";
     return;
   }
 
-  const notes = data?.public_notes || "";
+  await ensureLogin();
+});
 
-  localStorage.setItem(
-    `${STORAGE_PREFIX}publicnotes_${currentSlotId}`,
-    notes
-  );
+function applyMasterReadOnly() {
+  const characterModal = document.getElementById("characterModalOverlay");
 
-  const textarea = document.getElementById("publicNotes");
-  if (textarea) textarea.value = notes;
+  // ---- INPUT / SELECT / TEXTAREA ----
+  document.querySelectorAll("input, select, textarea").forEach(el => {
+    // 1) NON bloccare popup Characters
+    if (characterModal && characterModal.contains(el)) return;
 
-  console.log("[PLAYER] Public notes refreshed from online");
+    // 2) NON bloccare skill search
+    if (
+      el.id === "skillSearch"
+    ) return;
+
+    // 3) futuri campi GM
+    if (el.closest(".gm-editable")) return;
+
+    el.setAttribute("disabled", "disabled");
+    el.classList.add("read-only");
+  });
+
+  // ---- BUTTONS ----
+  document.querySelectorAll("button").forEach(btn => {
+    // NON bloccare popup Characters
+    if (characterModal && characterModal.contains(btn)) return;
+
+    // BOTTONI SEMPRE ATTIVI IN MASTER
+    const allowedButtons = [
+      "btnCharacters",     // popup characters
+      "btnExport",     // export
+      "btnToggleAll",        // close/open all
+	  "btnSortSkills",        // sort skill
+      "btnReloadOnline"    // reload online
+    ];
+
+    if (!allowedButtons.includes(btn.id)) {
+      btn.setAttribute("disabled", "disabled");
+      btn.classList.add("read-only");
+    }
+  });
+
+  console.log("[MASTER] Read-only mode applied");
 }
+
+const gmNotesTextarea = document.getElementById("gmNotes");
+
+if (gmNotesTextarea) {
+  gmNotesTextarea.addEventListener("input", async () => {
+    if (!IS_MASTER || !currentSlotId) return;
+
+    const notes = gmNotesTextarea.value;
+    localStorage.setItem(`${STORAGE_PREFIX}gmnotes_${currentSlotId}`, notes);
+
+    const slots = getSlotsMeta();
+    const slot = slots.find(s => s.id === currentSlotId);
+    if (!slot?.idcloud) return;
+
+    await supabaseClient
+      .from("characters")
+      .update({ gm_notes: notes })
+      .eq("id", slot.idcloud);
+  });
+}
+
+const publicNotesTextarea = document.getElementById("publicNotes");
+
+if (publicNotesTextarea) {
+  publicNotesTextarea.addEventListener("input", async () => {
+    if (!IS_MASTER || !currentSlotId) return;
+
+    const notes = publicNotesTextarea.value;
+    localStorage.setItem(`${STORAGE_PREFIX}publicnotes_${currentSlotId}`, notes);
+
+    const slots = getSlotsMeta();
+    const slot = slots.find(s => s.id === currentSlotId);
+    if (!slot?.idcloud) return;
+
+    await supabaseClient
+      .from("characters")
+      .update({ public_notes: notes })
+      .eq("id", slot.idcloud);
+  });
+}
+
 
 </script>
 
