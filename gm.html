@@ -80,7 +80,7 @@ h2 {
 }
 
 /* CHARACTER SLOTS MODAL – parchment style */
-#characterModalOverlay {
+.character-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
@@ -90,7 +90,7 @@ h2 {
   z-index: 9998;
 }
 
-#characterModalOverlay.show {
+.character-modal-overlay.show {
   display: flex;
 }
 
@@ -578,6 +578,63 @@ body.master-mode #skillTooltip {
   border-color: #6e1f1f;
 }
 
+/* ===== GM OVERVIEW ===== */
+
+.overview-row {
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  padding:6px 6px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.overview-row:hover {
+  background:#f3e6c1;
+}
+
+.overview-row input[type="checkbox"] {
+  margin-top: 3px;
+}
+
+.overview-row .ov-name {
+  font-weight: 700;
+}
+
+.overview-row .ov-meta {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.overview-table th, .overview-table td {
+  border: 1px solid #b59b6b;
+  padding: 6px;
+  vertical-align: top;
+}
+
+.overview-table th {
+  background: #d7c5a3;
+  font-family: 'Cinzel', serif;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.overview-table td {
+  background: #faf7f0;
+}
+
+.overview-table input[type="number"] {
+  background: #fffdf6;
+  border: 1px solid #b59b6b;
+  border-radius: 6px;
+}
 
 
 </style>
@@ -593,6 +650,8 @@ body.master-mode #skillTooltip {
     <div id="characterSlotsList"></div>
   </div>
 </div>
+
+
 
 <body>
 
@@ -643,12 +702,51 @@ body.master-mode #skillTooltip {
 
 <div class="toolbar">
   <button type="button" id="btnCharacters">Characters</button>
+  <button type="button" id="btnOverview">Overview</button>
   <button type="button" id="btnExport">Export JSON</button>
   <button type="button" id="btnReloadOnline">Reload From Online</button>
   <button type="button" id="btnToggleAll">Close All</button>
 </div>
 
+<!-- VIEW SWITCHER CONTAINERS -->
+<div id="overviewView" style="display:none; margin-top:10px;">
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+    <input id="overviewSearch" type="text" placeholder="Search character..." style="flex:1; min-width:260px; padding:6px; font-size:16px;">
 
+    <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
+      <input type="checkbox" id="ovFlagCombat" checked>
+      Combat
+    </label>
+
+    <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
+      <input type="checkbox" id="ovFlagMagic" checked>
+      Magic
+    </label>
+
+    <label style="display:flex; align-items:center; gap:6px; font-size:14px;">
+      <input type="checkbox" id="ovFlagOaths" checked>
+      Oaths
+    </label>
+
+    <button type="button" id="btnOverviewSelectAll">Select All</button>
+    <button type="button" id="btnOverviewClear">Clear</button>
+    <button type="button" id="btnOverviewRefresh">Refresh View</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 260px 1fr; gap:12px;">
+    <div style="border:1px solid #b59b6b; border-radius:8px; background:#fdf7e6; padding:8px; max-height: 520px; overflow:auto;">
+      <div style="font-family:'Cinzel', serif; font-size:13px; margin-bottom:6px; opacity:0.85;">CHARACTERS</div>
+      <div id="overviewCharacterList"></div>
+    </div>
+
+    <div style="border:1px solid #b59b6b; border-radius:8px; background:#fdf7e6; padding:8px; overflow:auto;">
+      <div id="overviewTableWrap"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="sheetView">
 
 <!-- =============================== -->
 <!--        CHARACTER INFO           -->
@@ -993,7 +1091,7 @@ body.master-mode #skillTooltip {
 
 <div id="skillTooltip"></div>
 
-
+</div>
 </div> <!-- end .container -->
 
 <script>
@@ -1761,6 +1859,330 @@ function closeCharacterModal() {
   overlay.classList.remove("show");
   overlay.dataset.forceOpen = "0";
 }
+/* =========================
+   GM OVERVIEW (TABLE MODE A)
+========================= */
+
+// ===== Overview columns driven by flags (GM request) =====
+
+function getOverviewFlags() {
+  return {
+    combat: document.getElementById("ovFlagCombat")?.checked ?? true,
+    magic: document.getElementById("ovFlagMagic")?.checked ?? true,
+    oaths: document.getElementById("ovFlagOaths")?.checked ?? true
+  };
+}
+
+function getSkillTotalDice(data, skillName) {
+  const list = Array.isArray(data?.skills) ? data.skills : [];
+  const target = String(skillName || "").trim().toLowerCase();
+
+  const s = list.find(x => {
+    const raw = String(x?.name || "");
+    const base = raw.split("(")[0].trim().toLowerCase(); // "Defense (Ag)" -> "defense"
+    return base === target;
+  });
+
+  return s?.totalDice ?? s?.skillRanks ?? "";
+}
+
+
+function buildOverviewColumns() {
+  const flags = getOverviewFlags();
+
+  // sempre visibili
+const cols = [
+  { key: "name", label: "Name", get: (d, m) => d?.name ?? m?.name ?? "" },
+
+  // EDITABILI SOLO LOCALE
+  {
+    key: "experience",
+    label: "XP",
+    get: (d) => d?.experience ?? "",
+    editable: true,
+    inputType: "number"
+  },
+  {
+    key: "luck",
+    label: "Luck",
+    get: (d) => d?.luck ?? "",
+    editable: true,
+    inputType: "number"
+  },
+  {
+    key: "grit",
+    label: "Grit",
+    get: (d) => d?.grit ?? "",
+    editable: true,
+    inputType: "number"
+  }
+];
+
+
+  if (flags.oaths) {
+  const getOath = (d, idx) => {
+    // formato nuovo (array)
+    const arr = Array.isArray(d?.oaths) ? d.oaths : null;
+    if (arr && arr[idx]) return arr[idx];
+
+    // fallback formato vecchio (campi singoli)
+    const k = `oath${idx + 1}`;
+    return d?.[k] ?? "";
+  };
+
+  cols.push(
+    { key: "oath1", label: "Oath 1", get: (d) => getOath(d, 0) },
+    { key: "oath2", label: "Oath 2", get: (d) => getOath(d, 1) },
+    { key: "oath3", label: "Oath 3", get: (d) => getOath(d, 2) }
+  );
+  }
+
+
+
+  if (flags.magic) {
+    cols.push(
+  {
+    key: "arcaneStress",
+    label: "Arcane Stress",
+    get: (d) => d?.arcaneStress ?? "",
+    editable: true,
+    inputType: "number"
+  },
+   { key: "stressThreshold", label: "Stress Th.", get: (d) => d?.stressThreshold ?? "" },
+   { key: "spellSaveModifier", label: "Spell Save Mod", get: (d) => d?.spellSaveModifier ?? "" },
+   {
+    key: "currentMiracleDV",
+    label: "Miracle DV",
+    get: (d) => d?.currentMiracleDV ?? "",
+    editable: true,
+    inputType: "number"
+    }
+    );
+
+  }
+
+  if (flags.combat) {
+    cols.push(
+      { key: "skill_defense", label: "Defense", get: (d) => getSkillTotalDice(d, "Defense") },
+      { key: "skill_fighting", label: "Fighting", get: (d) => getSkillTotalDice(d, "Fighting") },
+      { key: "skill_shooting", label: "Shooting", get: (d) => getSkillTotalDice(d, "Shooting") },
+      { key: "av", label: "AV", get: (d) => d?.av ?? "" }
+    );
+  }
+
+  return cols;
+}
+
+function renderOverviewTable() {
+  const wrap = document.getElementById("overviewTableWrap");
+  if (!wrap) return;
+
+  const slots = getSlotsMeta();
+  const selectedIds = Object.keys(overviewSelected).filter(id => overviewSelected[id]);
+
+  if (!selectedIds.length) {
+    wrap.innerHTML = `<div style="font-style:italic; opacity:0.85;">Select one or more characters to view the overview table.</div>`;
+    return;
+  }
+
+  const columns = buildOverviewColumns();
+
+  const header = `
+    <tr>
+      ${columns.map(c => `<th>${escapeHtml(c.label)}</th>`).join("")}
+      <th>Load</th>
+    </tr>
+  `;
+
+  const rows = selectedIds.map(slotId => {
+    const meta = slots.find(s => s.id === slotId);
+    const data = getCharacterDataForSlot(slotId) || {};
+
+    const tds = columns.map(c => {
+  const v = c.get(data, meta);
+
+  // campi editabili: input locale-only
+  if (c.editable) {
+    const val = (v ?? "");
+    const type = c.inputType || "text";
+    return `
+      <td>
+        <input
+          type="${type}"
+          value="${escapeHtml(String(val))}"
+          data-ov-edit="${escapeHtml(c.key)}"
+          data-ov-slot="${escapeHtml(String(slotId))}"
+          style="width:72px; padding:4px; font-size:14px;"
+        >
+      </td>
+    `;
+  }
+
+  // default
+  return `<td>${escapeHtml(String(v ?? ""))}</td>`;
+}).join("");
+
+
+    return `
+      <tr>
+        ${tds}
+        <td style="white-space:nowrap;">
+          <button type="button" data-ov-load="${slotId}">Load</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  wrap.innerHTML = `
+    <table class="overview-table">
+      <thead>${header}</thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  
+  // bind editor inputs (local-only)
+wrap.querySelectorAll('input[data-ov-edit][data-ov-slot]').forEach(inp => {
+  // evita che click sull'input attivi altre UI
+  inp.addEventListener("click", ev => ev.stopPropagation());
+  inp.addEventListener("keydown", ev => ev.stopPropagation());
+
+  const commit = () => {
+    const slotId = inp.getAttribute("data-ov-slot");
+    const key = inp.getAttribute("data-ov-edit");
+    if (!slotId || !key) return;
+
+    const normalized = normalizeNumberInput(inp.value);
+    setLocalCharacterField(slotId, key, normalized);
+
+    // opzionale: se vuoi, puoi aggiornare subito la tabella per mostrare normalizzato
+    // renderOverviewTable();
+  };
+
+  inp.addEventListener("change", commit);
+  inp.addEventListener("blur", commit);
+});
+
+  wrap.querySelectorAll("button[data-ov-load]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const slotId = btn.getAttribute("data-ov-load");
+      if (!slotId) return;
+      selectSlot(slotId);
+      showSheetView();
+    });
+  });
+}
+
+
+// memoria selezione (slotId -> true)
+let overviewSelected = {};
+
+function showOverviewView() {
+  const ov = document.getElementById("overviewView");
+  const sh = document.getElementById("sheetView");
+  if (ov) ov.style.display = "block";
+  if (sh) sh.style.display = "none";
+
+  renderOverviewCharacterList();
+  renderOverviewTable();
+}
+
+function showSheetView() {
+  const ov = document.getElementById("overviewView");
+  const sh = document.getElementById("sheetView");
+  if (ov) ov.style.display = "none";
+  if (sh) sh.style.display = "block";
+}
+
+
+function getCharacterDataForSlot(slotId) {
+  const raw = localStorage.getItem(getSlotKey(slotId));
+  if (!raw || raw === "undefined") return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+function setLocalCharacterField(slotId, key, value) {
+  const data = getCharacterDataForSlot(slotId) || {};
+  data[key] = value;
+  localStorage.setItem(getSlotKey(slotId), JSON.stringify(data));
+
+  // aggiorna anche i meta slot (XP/Luck/Grit non stanno nei meta, ma name/lineage/class sì)
+  // nessuna chiamata online: SOLO locale.
+}
+
+function normalizeNumberInput(v) {
+  const s = String(v ?? "").trim();
+  if (s === "") return "";
+  const n = Number(s);
+  return Number.isFinite(n) ? n : "";
+}
+
+function renderOverviewCharacterList() {
+  const listEl = document.getElementById("overviewCharacterList");
+  if (!listEl) return;
+
+  const q = (document.getElementById("overviewSearch")?.value || "").trim().toLowerCase();
+  const slots = getSlotsMeta().slice().sort((a, b) => {
+    const da = new Date(a.lastModified || 0).getTime();
+    const db = new Date(b.lastModified || 0).getTime();
+    return db - da;
+  });
+
+  listEl.innerHTML = "";
+
+  if (!slots.length) {
+    listEl.innerHTML = `<div style="font-style:italic; opacity:0.8;">No characters loaded.</div>`;
+    return;
+  }
+
+  slots.forEach(s => {
+    const name = (s.name || "Unnamed");
+    const lineage = (s.lineage || "?");
+    const cls = (s.class || "?");
+
+    const hay = `${name} ${lineage} ${cls}`.toLowerCase();
+    if (q && !hay.includes(q)) return;
+
+    const row = document.createElement("div");
+    row.className = "overview-row";
+    row.innerHTML = `
+      <input type="checkbox" data-ov-id="${s.id}">
+      <div>
+        <div class="ov-name">${escapeHtml(name)}</div>
+        <div class="ov-meta">${escapeHtml(lineage)} – ${escapeHtml(cls)}</div>
+      </div>
+    `;
+
+    const cb = row.querySelector('input[type="checkbox"]');
+    cb.checked = !!overviewSelected[s.id];
+
+    cb.addEventListener("change", () => {
+      overviewSelected[s.id] = cb.checked;
+      renderOverviewTable();
+    });
+
+    // click sulla riga = toggle checkbox
+    row.addEventListener("click", (ev) => {
+      if (ev.target === cb) return;
+      cb.checked = !cb.checked;
+      overviewSelected[s.id] = cb.checked;
+      renderOverviewTable();
+    });
+
+    listEl.appendChild(row);
+  });
+}
+
+
+// piccola escape per HTML injection accidentale
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 
 /* creazione nuovo slot (vuoto) */
 function createNewSlot() {
@@ -2020,6 +2442,52 @@ document.getElementById("characterModalClose")
   .addEventListener("click", () => {
     closeCharacterModal();
   });
+
+document.getElementById("btnOverview")
+  .addEventListener("click", () => {
+    const ov = document.getElementById("overviewView");
+    const isOpen = ov && ov.style.display !== "none" && ov.style.display !== "";
+    if (isOpen) {
+      showSheetView();
+    } else {
+      showOverviewView();
+    }
+  });
+
+document.getElementById("overviewSearch")
+  .addEventListener("input", () => {
+    renderOverviewCharacterList();
+  });
+
+document.getElementById("btnOverviewSelectAll")
+  .addEventListener("click", () => {
+    const slots = getSlotsMeta();
+    slots.forEach(s => { overviewSelected[s.id] = true; });
+    renderOverviewCharacterList();
+    renderOverviewTable();
+  });
+
+document.getElementById("btnOverviewClear")
+  .addEventListener("click", () => {
+    overviewSelected = {};
+    renderOverviewCharacterList();
+    renderOverviewTable();
+  });
+
+document.getElementById("btnOverviewRefresh")
+  .addEventListener("click", () => {
+    renderOverviewCharacterList();
+    renderOverviewTable();
+  });
+
+document.getElementById("ovFlagCombat")
+  .addEventListener("change", () => renderOverviewTable());
+
+document.getElementById("ovFlagMagic")
+  .addEventListener("change", () => renderOverviewTable());
+
+document.getElementById("ovFlagOaths")
+  .addEventListener("change", () => renderOverviewTable());
 
 document.getElementById("characterSlotsList")
   .addEventListener("click", (e) => {
@@ -3039,18 +3507,29 @@ document.getElementById("btnMasterLogin").addEventListener("click", async () => 
 
 function applyMasterReadOnly() {
   const characterModal = document.getElementById("characterModalOverlay");
+  const overviewModal = document.getElementById("overviewModalOverlay"); // se esiste ancora nel DOM
+  const overviewView  = document.getElementById("overviewView");        // nuova overview in-page
+  const sheetView     = document.getElementById("sheetView");           // solo questa deve diventare read-only
 
-  // ---- INPUT / SELECT / TEXTAREA ----
-  document.querySelectorAll("input, select, textarea").forEach(el => {
-    // 1) NON bloccare popup Characters
+  // ---- INPUT / SELECT / TEXTAREA (solo dentro sheetView) ----
+  const sheetInputs = sheetView
+    ? sheetView.querySelectorAll("input, select, textarea")
+    : document.querySelectorAll("input, select, textarea");
+
+  sheetInputs.forEach(el => {
+    // 1) NON bloccare popup Characters (se dentro)
     if (characterModal && characterModal.contains(el)) return;
 
-    // 2) NON bloccare skill search
-    if (
-      el.id === "skillSearch"
-    ) return;
+    // 2) NON bloccare eventuale vecchio overview modal (se ancora presente)
+    if (overviewModal && overviewModal.contains(el)) return;
 
-    // 3) futuri campi GM
+    // 3) NON bloccare overview in pagina
+    if (overviewView && overviewView.contains(el)) return;
+
+    // 4) NON bloccare skill search (richiesta)
+    if (el.id === "skillSearch") return;
+
+    // 5) campi GM editabili
     if (el.closest(".gm-editable")) return;
 
     el.setAttribute("disabled", "disabled");
@@ -3062,13 +3541,20 @@ function applyMasterReadOnly() {
     // NON bloccare popup Characters
     if (characterModal && characterModal.contains(btn)) return;
 
-    // BOTTONI SEMPRE ATTIVI IN MASTER
+    // NON bloccare vecchio overview modal (se esiste)
+    if (overviewModal && overviewModal.contains(btn)) return;
+
+    // NON bloccare overview in pagina (serve per Select/Clear/Refresh e bottoni Load senza id)
+    if (overviewView && overviewView.contains(btn)) return;
+
+    // BOTTONI SEMPRE ATTIVI IN MASTER (toolbar)
     const allowedButtons = [
-      "btnCharacters",     // popup characters
-      "btnExport",     // export
-      "btnToggleAll",        // close/open all
-	  "btnSortSkills",        // sort skill
-      "btnReloadOnline"    // reload online
+      "btnCharacters",
+      "btnOverview",
+      "btnExport",
+      "btnToggleAll",
+      "btnSortSkills",
+      "btnReloadOnline"
     ];
 
     if (!allowedButtons.includes(btn.id)) {
@@ -3079,6 +3565,7 @@ function applyMasterReadOnly() {
 
   console.log("[MASTER] Read-only mode applied");
 }
+
 
 const gmNotesTextarea = document.getElementById("gmNotes");
 
